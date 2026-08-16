@@ -1,0 +1,60 @@
+import { useState } from 'react'
+
+/** 文字列から安定した色相を作り、写真が無い/読めないときの下地にする。 */
+function hueOf(seed: string): number {
+  let h = 0
+  for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) % 360
+  return h
+}
+
+/**
+ * 写真表示。読み込み失敗・未設定時は海図トーンのグラデーションに落とす。
+ * 写真主義のレイアウトを、画像が無くても崩さないための土台。
+ */
+export function Photo({
+  src,
+  alt,
+  seed = alt,
+  className = '',
+  imgClassName = '',
+  children,
+}: {
+  src?: string
+  alt: string
+  seed?: string
+  className?: string
+  imgClassName?: string
+  children?: React.ReactNode
+}) {
+  const [failed, setFailed] = useState(false)
+  const hue = hueOf(seed)
+  const showImage = Boolean(src) && !failed
+
+  return (
+    <div
+      className={`relative overflow-hidden bg-chart ${className}`}
+      style={{
+        backgroundImage: showImage
+          ? undefined
+          : `linear-gradient(150deg, hsl(${hue} 22% 22%), hsl(${(hue + 40) % 360} 26% 13%))`,
+      }}
+    >
+      {showImage && (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+          className={`h-full w-full object-cover ${imgClassName}`}
+        />
+      )}
+      {!showImage && (
+        <span className="label-caps absolute bottom-3 left-3 text-text-porcelain/40">
+          NO IMAGE
+        </span>
+      )}
+      {children}
+    </div>
+  )
+}

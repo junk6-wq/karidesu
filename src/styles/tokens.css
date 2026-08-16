@@ -1,0 +1,47 @@
+/*
+ * PASSAGE デザイントークン
+ * 8章（カラー）・9章（タイポグラフィ）・10章（モーション）に対応。
+ * Tailwind 側は tailwind.config.js からこの変数を参照する。
+ */
+
+:root {
+  /* --- Color: 搭乗券・コンパス・海図から起こしたパレット --- */
+  --c-ink-navy: #0e1521;
+  --c-chart-teal: #173b3a;
+  --c-stone-white: #edeee9;
+  --c-brass-gold: #c6a15b;
+  --c-brick-coral: #b94a3b;
+  --c-amber: #d68a3c; /* at_risk 表現のみに使う中間色 */
+  --c-text-ink: #14181c;
+  --c-text-porcelain: #f5f3ec;
+
+  /* 派生値 */
+  --c-line-light: rgba(20, 24, 28, 0.12);
+  --c-line-dark: rgba(245, 243, 236, 0.16);
+  --c-surface-light: #f7f7f4;
+  --c-surface-dark: #141c2b;
+
+  /* --- Typography --- */
+  --f-display: 'Instrument Serif', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  --f-body: 'Manrope', 'Noto Sans JP', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* --- Motion --- */
+  --e-passage: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --d-fast: 180ms;
+  --d-base: 320ms;
+  --d-slow: 620ms;
+}
+
+/* 10章: reduced motion では全てクロスフェードのみに縮退させる */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    transition-property: opacity !important;
+    scroll-behavior: auto !important;
+  }
+}

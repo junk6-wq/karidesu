@@ -1,0 +1,324 @@
+import type { GeoPoint } from '@/types'
+
+/**
+ * モック AI が提案するスポットの種データ。
+ * 実 API（Places 等）へ差し替えるまでの間、提案 UX を成立させるためだけの固定データ。
+ */
+
+export interface SpotSeed {
+  name: string
+  category: string
+  location: GeoPoint
+  photoUrls: string[]
+  openingHours?: string
+  closedDays?: string[]
+  estimatedStayMin?: number
+  priceLevel?: 1 | 2 | 3 | 4
+  tags: string[]
+}
+
+const photo = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1400&q=80`
+
+/** 関心タグ。S02 のヒアリングで選ばせる語彙と揃える。 */
+export const INTEREST_TAGS = [
+  '自然',
+  '絶景',
+  '温泉',
+  '食',
+  '歴史',
+  '街歩き',
+  'アート',
+  '海',
+] as const
+
+export const spotSeeds: Record<string, SpotSeed[]> = {
+  北海道: [
+    {
+      name: '美瑛 青い池',
+      category: '自然',
+      location: { lat: 43.4926, lng: 142.6247 },
+      photoUrls: [photo('1464822759023-fed622ff2c3b')],
+      openingHours: '日の出〜日没',
+      estimatedStayMin: 60,
+      priceLevel: 1,
+      tags: ['自然', '絶景'],
+    },
+    {
+      name: '富良野 ファーム富田',
+      category: '自然',
+      location: { lat: 43.4218, lng: 142.4747 },
+      photoUrls: [photo('1470770841072-f978cf4d019e')],
+      openingHours: '09:00–17:00',
+      estimatedStayMin: 90,
+      priceLevel: 1,
+      tags: ['自然', '絶景', '食'],
+    },
+    {
+      name: '小樽 運河',
+      category: '街歩き',
+      location: { lat: 43.1994, lng: 141.0027 },
+      photoUrls: [photo('1490806843957-31f4c9a91c65')],
+      estimatedStayMin: 80,
+      priceLevel: 1,
+      tags: ['街歩き', '歴史'],
+    },
+    {
+      name: '登別温泉 地獄谷',
+      category: '温泉',
+      location: { lat: 42.4995, lng: 141.1479 },
+      photoUrls: [photo('1545569341-9eb8b30979d9')],
+      estimatedStayMin: 70,
+      priceLevel: 2,
+      tags: ['温泉', '自然'],
+    },
+    {
+      name: '札幌 二条市場',
+      category: '食事',
+      location: { lat: 43.0574, lng: 141.3567 },
+      photoUrls: [photo('1503899036084-c55cdd92da26')],
+      openingHours: '07:00–18:00',
+      estimatedStayMin: 60,
+      priceLevel: 2,
+      tags: ['食', '街歩き'],
+    },
+    {
+      name: '知床五湖',
+      category: '自然',
+      location: { lat: 44.1198, lng: 145.0906 },
+      photoUrls: [photo('1500534623283-312aade485b7')],
+      closedDays: ['冬季閉鎖'],
+      estimatedStayMin: 120,
+      priceLevel: 1,
+      tags: ['自然', '絶景'],
+    },
+  ],
+  京都: [
+    {
+      name: '伏見稲荷大社',
+      category: '歴史',
+      location: { lat: 34.9671, lng: 135.7727 },
+      photoUrls: [photo('1493976040374-85c8e12f0c0e')],
+      openingHours: '終日',
+      estimatedStayMin: 100,
+      priceLevel: 1,
+      tags: ['歴史', '街歩き'],
+    },
+    {
+      name: '嵐山 竹林の小径',
+      category: '自然',
+      location: { lat: 35.0169, lng: 135.6716 },
+      photoUrls: [photo('1522547902298-51566e4fb383')],
+      estimatedStayMin: 60,
+      priceLevel: 1,
+      tags: ['自然', '街歩き', '絶景'],
+    },
+    {
+      name: '清水寺',
+      category: '歴史',
+      location: { lat: 34.9949, lng: 135.785 },
+      photoUrls: [photo('1524413840807-0c3cb6fa808d')],
+      openingHours: '06:00–18:00',
+      estimatedStayMin: 80,
+      priceLevel: 2,
+      tags: ['歴史', '絶景'],
+    },
+    {
+      name: '錦市場',
+      category: '食事',
+      location: { lat: 35.0050, lng: 135.7649 },
+      photoUrls: [photo('1503899036084-c55cdd92da26')],
+      openingHours: '10:00–18:00',
+      closedDays: ['水曜（店舗により）'],
+      estimatedStayMin: 70,
+      priceLevel: 2,
+      tags: ['食', '街歩き'],
+    },
+    {
+      name: '銀閣寺と哲学の道',
+      category: '歴史',
+      location: { lat: 35.0270, lng: 135.7982 },
+      photoUrls: [photo('1533050487297-09b450131914')],
+      openingHours: '08:30–17:00',
+      estimatedStayMin: 90,
+      priceLevel: 2,
+      tags: ['歴史', '街歩き', '自然'],
+    },
+  ],
+  沖縄: [
+    {
+      name: '古宇利大橋',
+      category: '絶景',
+      location: { lat: 26.6875, lng: 128.0169 },
+      photoUrls: [photo('1501785888041-af3ef285b470')],
+      estimatedStayMin: 50,
+      priceLevel: 1,
+      tags: ['海', '絶景'],
+    },
+    {
+      name: '美ら海水族館',
+      category: 'アート',
+      location: { lat: 26.6944, lng: 127.8779 },
+      photoUrls: [photo('1548013146-72479768bada')],
+      openingHours: '08:30–18:30',
+      estimatedStayMin: 150,
+      priceLevel: 3,
+      tags: ['海', 'アート'],
+    },
+    {
+      name: '備瀬のフクギ並木',
+      category: '街歩き',
+      location: { lat: 26.7043, lng: 127.8783 },
+      photoUrls: [photo('1517816743773-6e0fd518b4a6')],
+      estimatedStayMin: 60,
+      priceLevel: 1,
+      tags: ['自然', '街歩き'],
+    },
+    {
+      name: '首里城公園',
+      category: '歴史',
+      location: { lat: 26.2170, lng: 127.7195 },
+      photoUrls: [photo('1524413840807-0c3cb6fa808d')],
+      openingHours: '08:30–18:00',
+      estimatedStayMin: 90,
+      priceLevel: 2,
+      tags: ['歴史', '街歩き'],
+    },
+    {
+      name: '国際通りの食堂',
+      category: '食事',
+      location: { lat: 26.2145, lng: 127.6867 },
+      photoUrls: [photo('1542051841857-5f90071e7989')],
+      estimatedStayMin: 70,
+      priceLevel: 2,
+      tags: ['食', '街歩き'],
+    },
+  ],
+  長野: [
+    {
+      name: '上高地 河童橋',
+      category: '自然',
+      location: { lat: 36.2480, lng: 137.6386 },
+      photoUrls: [photo('1528127269322-539801943592')],
+      estimatedStayMin: 120,
+      priceLevel: 1,
+      tags: ['自然', '絶景'],
+    },
+    {
+      name: '白馬岩岳マウンテンリゾート',
+      category: '絶景',
+      location: { lat: 36.6981, lng: 137.8618 },
+      photoUrls: [photo('1500534314209-a25ddb2bd429')],
+      openingHours: '08:30–16:30',
+      estimatedStayMin: 150,
+      priceLevel: 3,
+      tags: ['絶景', '自然'],
+    },
+    {
+      name: '大王わさび農場',
+      category: '食事',
+      location: { lat: 36.2790, lng: 137.8896 },
+      photoUrls: [photo('1469474968028-56623f02e42e')],
+      openingHours: '09:00–17:00',
+      estimatedStayMin: 70,
+      priceLevel: 1,
+      tags: ['食', '自然'],
+    },
+    {
+      name: '万座温泉',
+      category: '温泉',
+      location: { lat: 36.6387, lng: 138.5011 },
+      photoUrls: [photo('1545569341-9eb8b30979d9')],
+      estimatedStayMin: 120,
+      priceLevel: 3,
+      tags: ['温泉', '絶景'],
+    },
+    {
+      name: '軽井沢 旧軽井沢銀座',
+      category: '街歩き',
+      location: { lat: 36.3565, lng: 138.6355 },
+      photoUrls: [photo('1490806843957-31f4c9a91c65')],
+      estimatedStayMin: 90,
+      priceLevel: 2,
+      tags: ['街歩き', '食'],
+    },
+    {
+      name: '善光寺',
+      category: '歴史',
+      location: { lat: 36.6617, lng: 138.1873 },
+      photoUrls: [photo('1533050487297-09b450131914')],
+      openingHours: '04:30–16:30',
+      estimatedStayMin: 70,
+      priceLevel: 1,
+      tags: ['歴史', '街歩き'],
+    },
+  ],
+  東京: [
+    {
+      name: '浅草寺',
+      category: '歴史',
+      location: { lat: 35.7148, lng: 139.7967 },
+      photoUrls: [photo('1493976040374-85c8e12f0c0e')],
+      openingHours: '06:00–17:00',
+      estimatedStayMin: 70,
+      priceLevel: 1,
+      tags: ['歴史', '街歩き'],
+    },
+    {
+      name: 'teamLab Borderless',
+      category: 'アート',
+      location: { lat: 35.6655, lng: 139.7307 },
+      photoUrls: [photo('1548013146-72479768bada')],
+      openingHours: '10:00–21:00',
+      closedDays: ['火'],
+      estimatedStayMin: 150,
+      priceLevel: 3,
+      tags: ['アート'],
+    },
+    {
+      name: '築地場外市場',
+      category: '食事',
+      location: { lat: 35.6654, lng: 139.7707 },
+      photoUrls: [photo('1542051841857-5f90071e7989')],
+      openingHours: '05:00–14:00',
+      closedDays: ['日'],
+      estimatedStayMin: 80,
+      priceLevel: 2,
+      tags: ['食', '街歩き'],
+    },
+    {
+      name: '代々木公園と奥渋谷',
+      category: '街歩き',
+      location: { lat: 35.6720, lng: 139.6949 },
+      photoUrls: [photo('1517816743773-6e0fd518b4a6')],
+      estimatedStayMin: 90,
+      priceLevel: 1,
+      tags: ['街歩き', '自然'],
+    },
+    {
+      name: '東京都現代美術館',
+      category: 'アート',
+      location: { lat: 35.6803, lng: 139.8072 },
+      openingHours: '10:00–18:00',
+      closedDays: ['月'],
+      photoUrls: [photo('1480796927426-f609979314bd')],
+      estimatedStayMin: 110,
+      priceLevel: 2,
+      tags: ['アート', '街歩き'],
+    },
+  ],
+}
+
+/** ヒアリング画面で行き先候補として並べる。 */
+export const DESTINATION_PRESETS = Object.keys(spotSeeds)
+
+/** 表紙写真の候補。Trip 作成時に行き先から選ぶ。 */
+export const COVER_PHOTOS: Record<string, string> = {
+  北海道: photo('1464822759023-fed622ff2c3b'),
+  京都: photo('1493976040374-85c8e12f0c0e'),
+  沖縄: photo('1501785888041-af3ef285b470'),
+  長野: photo('1528127269322-539801943592'),
+  東京: photo('1480796927426-f609979314bd'),
+}
+
+export const FALLBACK_COVER = photo('1469474968028-56623f02e42e')

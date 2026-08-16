@@ -1,0 +1,20 @@
+{
+  "name": "PASSAGE — 旅を、つくる。旅を、生きる。旅を、遺す。",
+  "short_name": "PASSAGE",
+  "description": "旅程を作り、旅の最中に導かれ、旅のあとに一冊の旅行記が編まれる旅アプリ。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1521",
+  "theme_color": "#0E1521",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
