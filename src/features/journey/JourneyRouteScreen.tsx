@@ -5,6 +5,7 @@ import { buildContext, useJourneyStore } from '@/store/journeyStore'
 import { MapLayer } from '@/components/map/MapLayer'
 import { StatReadout } from '@/components/common/StatReadout'
 import { Thread } from '@/components/thread/Thread'
+import { TodayTimeline } from '@/components/journey/TodayTimeline'
 import { formatDuration, toISODate } from '@/lib/time'
 import { formatKm } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
@@ -104,37 +105,12 @@ export function JourneyRouteScreen() {
           />
         </div>
 
-        <ul className="mt-8 space-y-3">
-          {(day?.items ?? []).map((item) => {
-            const spot = trip.spots.find((s) => s.id === item.spotId)
-            const done = Boolean(item.actualArrival)
-            const isNext = item.id === ctx.nextItem?.id
-            return (
-              <li key={item.id} className="flex items-center gap-4">
-                <span
-                  className={`h-2.5 w-2.5 shrink-0 rounded-full border ${
-                    done || isNext ? 'border-brass bg-brass' : 'border-white/30'
-                  } ${isNext ? 'ring-4 ring-brass/25' : ''}`}
-                />
-                <span className="mono-readout w-12 shrink-0 text-[12px] text-text-porcelain/45">
-                  {item.actualArrival ?? item.plannedArrival ?? '--:--'}
-                </span>
-                <span
-                  className={`min-w-0 flex-1 truncate text-[14px] ${
-                    done ? 'text-text-porcelain/40' : isNext ? 'text-brass' : ''
-                  }`}
-                >
-                  {spot?.name ?? '—'}
-                </span>
-                {item.travelToNext && (
-                  <span className="mono-readout shrink-0 text-[11px] text-text-porcelain/35">
-                    {formatDuration(item.travelToNext.durationMin)}
-                  </span>
-                )}
-              </li>
-            )
-          })}
-        </ul>
+        <TodayTimeline
+          items={day?.items ?? []}
+          spots={trip.spots}
+          nextItemId={ctx.nextItem?.id}
+          className="mt-8"
+        />
 
         {!ctx.state.currentLocation && (
           <p className="mono-readout mt-8 text-[11px] leading-relaxed text-text-porcelain/35">
