@@ -1,5 +1,7 @@
 import type {
   AIAgentProvider,
+  AIProposal,
+  DayLoad,
   GeoPoint,
   ItineraryDay,
   ItineraryWarning,
@@ -9,11 +11,15 @@ import type {
   Spot,
   Trip,
   TripContext,
+  TripHealth,
 } from '@/types'
 import { uid } from '@/lib/id'
 import { estimateDurationMin, haversineKm } from '@/lib/geo'
 import { addMinutes, formatDuration, toMinutes, weekdayJa } from '@/lib/time'
 import { spotSeeds } from './spotSeeds'
+import { proposeItineraryChanges as buildProposals } from '@/lib/aiProposals'
+import { evaluateDayLoadSync, evaluateTripHealthSync } from '@/lib/tripHealth'
+import { formatCurrency } from '@/lib/format'
 
 /** 実 API 導入までの遅延演出。UX の「考えている間」を再現する。 */
 const think = (ms = 620) => new Promise<void>((r) => setTimeout(r, ms))
@@ -95,27 +101,46 @@ export class MockAIAgentProvider implements AIAgentProvider {
           travelToNext = undefined
         }
 
-        // 2) 定休日チェック
+        // 2a) AVOID に設定されたスポットが旅程に残っていないか
+        if (spot?.priority === 'avoid') {
+          warnings.push({
+            itemId: item.id,
+            severity: 'warn',
+            message: `${spot.name} は AVOID（避けたい場所）に設定されています`,
+          })
+        }
+
+        // 2b) 定休日チェック
         if (closedOnDate(spot, day.date)) {
           warnings.push({
             itemId: item.id,
             severity: 'risk',
             message: `${spot?.name} はこの日が定休日の可能性があります`,
+            category: 'opening_hours',
           })
         }
 
-        // 3) 到着予定と実移動時間の突き合わせ
+        // 3) 到着予定と実移動時間の突き合わせ、および余裕（rest_margin）チェック
         const departure = item.plannedDeparture ?? item.plannedArrival
         const nextArrival = next?.plannedArrival
         if (departure && nextArrival && travelToNext) {
           const gap = (toMinutes(nextArrival) ?? 0) - (toMinutes(departure) ?? 0)
-          if (gap < travelToNext.durationMin) {
+          const slack = gap - travelToNext.durationMin
+          if (slack < 0) {
             warnings.push({
               itemId: item.id,
               severity: 'warn',
               message: `次の予定まで ${formatDuration(gap)} ですが移動に ${formatDuration(
                 travelToNext.durationMin,
               )} かかります`,
+              category: 'travel_time',
+            })
+          } else if (slack < 15) {
+            warnings.push({
+              itemId: item.id,
+              severity: 'info',
+              message: `${nextSpot?.name ?? '次の予定'} まで余裕が ${formatDuration(slack)} しかありません`,
+              category: 'rest_margin',
             })
           }
         }
@@ -129,11 +154,25 @@ export class MockAIAgentProvider implements AIAgentProvider {
           itemId: items[items.length - 1].id,
           severity: 'info',
           message: 'この日は予定が 6 件以上です。1 つ翌日に回すと余裕が出ます',
+          category: 'density',
         })
       }
 
       return { ...day, items }
     })
+
+    // 5) 予算超過チェック（実績が計画を上回っている場合のみ）
+    const plannedTotal = Object.values(trip.budget.planned).reduce((a, b) => a + b, 0)
+    const actualTotal = Object.values(trip.budget.actual ?? {}).reduce((a, b) => a + b, 0)
+    const lastItem = [...days].reverse().find((d) => d.items.length > 0)?.items.slice(-1)[0]
+    if (actualTotal > plannedTotal && plannedTotal > 0 && lastItem) {
+      warnings.push({
+        itemId: lastItem.id,
+        severity: actualTotal > plannedTotal * 1.15 ? 'risk' : 'warn',
+        message: `実績が計画予算を ${formatCurrency(actualTotal - plannedTotal, trip.budget.currency)} 上回っています`,
+        category: 'budget',
+      })
+    }
 
     return { days, warnings }
   }
@@ -262,6 +301,21 @@ export class MockAIAgentProvider implements AIAgentProvider {
       heroPhotoUrl: trip.coverPhotoUrl ?? spotById.get(trip.spots[0]?.id)?.photoUrls[0],
       generatedAt: new Date().toISOString(),
     }
+  }
+
+  async proposeItineraryChanges(trip: Trip, request: string): Promise<AIProposal[]> {
+    await think(520)
+    return buildProposals(trip, request)
+  }
+
+  async evaluateTripHealth(trip: Trip, warnings: ItineraryWarning[]): Promise<TripHealth> {
+    await think(200)
+    return evaluateTripHealthSync(trip, warnings)
+  }
+
+  async evaluateDayLoad(trip: Trip): Promise<DayLoad[]> {
+    await think(150)
+    return evaluateDayLoadSync(trip)
   }
 }
 

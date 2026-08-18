@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
+import type { SpotPriority } from '@/types'
 import { useTrip, useTripsStore } from '@/store/tripsStore'
 import { Photo } from '@/components/common/Photo'
 import { Button } from '@/components/common/Button'
@@ -7,15 +8,28 @@ import { Chip } from '@/components/common/QuestChip'
 import { AddSpotSheet } from './AddSpotSheet'
 import { formatDuration } from '@/lib/time'
 
+const PRIORITY_OPTIONS: { value: SpotPriority; label: string }[] = [
+  { value: 'must', label: 'MUST' },
+  { value: 'want', label: 'WANT' },
+  { value: 'avoid', label: 'AVOID' },
+]
+
+const PRIORITY_ACTIVE_STYLE: Record<SpotPriority, string> = {
+  must: 'border-brass bg-brass text-ink',
+  want: 'border-black/25 bg-ink text-text-porcelain',
+  avoid: 'border-brick bg-brick text-white',
+}
+
 /**
  * Spots & Wishlist（4章 IA）
  * 旅程に入っているもの／まだ入れていないもの（＝行きたいリスト）を並べて見る。
+ * MUST/WANT/AVOID は AI の旅程生成・再最適化が優先順位として参照する（12章）。
  */
 export function SpotsScreen() {
   const { id } = useParams()
   const trip = useTrip(id)
-  const removeSpot = useTripsStore((s) => s.removeSpot)
-  const [filter, setFilter] = useState<'all' | 'planned' | 'wishlist'>('all')
+  const { removeSpot, setSpotPriority } = useTripsStore()
+  const [filter, setFilter] = useState<'all' | 'planned' | 'wishlist' | SpotPriority>('all')
   const [adding, setAdding] = useState(false)
 
   if (!trip || !id) return <Navigate to="/" replace />
@@ -24,9 +38,12 @@ export function SpotsScreen() {
     trip.itinerary.flatMap((d) => d.items.map((i) => i.spotId)),
   )
 
-  const spots = trip.spots.filter((s) =>
-    filter === 'planned' ? usedIds.has(s.id) : filter === 'wishlist' ? !usedIds.has(s.id) : true,
-  )
+  const spots = trip.spots.filter((s) => {
+    if (filter === 'planned') return usedIds.has(s.id)
+    if (filter === 'wishlist') return !usedIds.has(s.id)
+    if (filter === 'must' || filter === 'want' || filter === 'avoid') return s.priority === filter
+    return true
+  })
 
   return (
     <div className="mx-auto max-w-[1000px] px-5 pb-24 pt-6">
@@ -46,6 +63,9 @@ export function SpotsScreen() {
             ['all', `すべて ${trip.spots.length}`],
             ['planned', `旅程に入れた ${usedIds.size}`],
             ['wishlist', `まだ ${trip.spots.length - usedIds.size}`],
+            ['must', `MUST ${trip.spots.filter((s) => s.priority === 'must').length}`],
+            ['want', `WANT ${trip.spots.filter((s) => s.priority === 'want').length}`],
+            ['avoid', `AVOID ${trip.spots.filter((s) => s.priority === 'avoid').length}`],
           ] as const
         ).map(([value, label]) => (
           <Chip key={value} active={filter === value} onClick={() => setFilter(value)}>
@@ -78,6 +98,26 @@ export function SpotsScreen() {
                 {spot.category} · {formatDuration(spot.estimatedStayMin ?? 60)}
                 {spot.openingHours ? ` · ${spot.openingHours}` : ''}
               </p>
+
+              <div className="mt-3 flex gap-1.5">
+                {PRIORITY_OPTIONS.map((opt) => {
+                  const active = spot.priority === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSpotPriority(id, spot.id, active ? undefined : opt.value)}
+                      className={`tap label-caps rounded-full border px-2.5 py-1 text-[10px] transition duration-200 ease-passage ${
+                        active
+                          ? PRIORITY_ACTIVE_STYLE[opt.value]
+                          : 'border-black/12 text-text-ink/45 hover:border-black/25'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+
               <button
                 onClick={() => removeSpot(id, spot.id)}
                 className="tap mt-3 text-[12px] text-text-ink/40 hover:text-brick"

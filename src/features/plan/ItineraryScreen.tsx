@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   DndContext,
   KeyboardSensor,
@@ -17,6 +17,7 @@ import {
 import type { ItineraryItem } from '@/types'
 import { useTrip, useTripWarnings, useTripsStore } from '@/store/tripsStore'
 import { TimelineNode, type NodeState } from '@/components/itinerary/TimelineNode'
+import { ItemQuickMenu } from '@/components/itinerary/ItemQuickMenu'
 import { MapLayer } from '@/components/map/MapLayer'
 import { Button } from '@/components/common/Button'
 import { SpotDetailSheet } from './SpotDetailSheet'
@@ -24,32 +25,60 @@ import { AddSpotSheet } from './AddSpotSheet'
 import { formatDateDot, toISODate, weekdayEn } from '@/lib/time'
 import { tripProgress } from '@/lib/tripStats'
 
+interface MenuTarget {
+  dayId: string
+  itemId: string
+  spotName: string
+}
+
 /**
  * S04 — Itinerary Timeline
- * 左に垂直タイムライン、右にミニマップ。並べ替えのたびに
- * AI が移動時間・営業時間を検証し、該当ノードに QuestChip を出す。
+ * 写真+タイムライン+地図の旅程エディタ。dnd-kit のドラッグに加え、
+ * スマホでも迷わないよう「⋮」から上下移動・複製・削除ができる。
  */
 export function ItineraryScreen() {
   const { id } = useParams()
   const trip = useTrip(id)
   const warnings = useTripWarnings(id)
-  const { reorderItems, runOptimize, agentBusy } = useTripsStore()
+  const {
+    reorderItems,
+    runOptimize,
+    agentBusy,
+    moveItemUp,
+    moveItemDown,
+    duplicateItem,
+    removeItem,
+  } = useTripsStore()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const [openItemId, setOpenItemId] = useState<string | null>(null)
   const [addToDayId, setAddToDayId] = useState<string | null>(null)
   const [focusId, setFocusId] = useState<string | undefined>()
   const [mobileTab, setMobileTab] = useState<'timeline' | 'map'>('timeline')
+  const [menuTarget, setMenuTarget] = useState<MenuTarget | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  // 画面を開いた時点で一度検証する（並べ替え時にも再実行）
   useEffect(() => {
     if (id) void runOptimize(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  // TRIP CHECK から「該当する旅程項目までフォーカス」できるようにする（?focus=itemId）
+  useEffect(() => {
+    const focus = searchParams.get('focus')
+    if (!focus) return
+    setFocusId(focus)
+    const t = window.setTimeout(() => {
+      document.getElementById(focus)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 120)
+    return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const warningsByItem = useMemo(() => {
     const map = new Map<string, typeof warnings>()
@@ -87,7 +116,6 @@ export function ItineraryScreen() {
     const next = [...ids]
     next.splice(to, 0, next.splice(from, 1)[0])
     reorderItems(id, dayId, next)
-    // 並べ替え後は移動時間と警告を組み直す
     await runOptimize(id)
   }
 
@@ -105,6 +133,9 @@ export function ItineraryScreen() {
       ]
     }),
   )
+
+  const menuDay = menuTarget ? trip.itinerary.find((d) => d.id === menuTarget.dayId) : undefined
+  const menuIndex = menuDay?.items.findIndex((i) => i.id === menuTarget?.itemId) ?? -1
 
   return (
     <div className="mx-auto max-w-[1200px] px-5 pb-28 pt-6">
@@ -157,7 +188,7 @@ export function ItineraryScreen() {
                   strategy={verticalListSortingStrategy}
                 >
                   <ul className="list-none">
-                    {day.items.map((item) => (
+                    {day.items.map((item, itemIndex) => (
                       <TimelineNode
                         key={item.id}
                         item={item}
@@ -165,10 +196,23 @@ export function ItineraryScreen() {
                         state={stateOf(item, day.date)}
                         warnings={warningsByItem.get(item.id) ?? []}
                         focused={focusId === item.id}
+                        nextPlannedArrival={day.items[itemIndex + 1]?.plannedArrival}
                         onOpen={() => {
                           setFocusId(item.id)
                           setOpenItemId(item.id)
                         }}
+                        onRequestFreeTimeIdea={() =>
+                          navigate(
+                            `/trip/${trip.id}/agent?nl=${encodeURIComponent(`DAY${dayIndex + 1}の空き時間に、近くの候補を追加して`)}`,
+                          )
+                        }
+                        onMenu={() =>
+                          setMenuTarget({
+                            dayId: day.id,
+                            itemId: item.id,
+                            spotName: spotById.get(item.spotId)?.name ?? '予定',
+                          })
+                        }
                       />
                     ))}
                   </ul>
@@ -216,6 +260,27 @@ export function ItineraryScreen() {
       )}
       {addToDayId && (
         <AddSpotSheet tripId={trip.id} dayId={addToDayId} onClose={() => setAddToDayId(null)} />
+      )}
+
+      {menuTarget && (
+        <ItemQuickMenu
+          open
+          onClose={() => setMenuTarget(null)}
+          spotName={menuTarget.spotName}
+          isFirst={menuIndex <= 0}
+          isLast={menuDay ? menuIndex >= menuDay.items.length - 1 : true}
+          onMoveUp={() => moveItemUp(trip.id, menuTarget.dayId, menuTarget.itemId)}
+          onMoveDown={() => moveItemDown(trip.id, menuTarget.dayId, menuTarget.itemId)}
+          onDuplicate={() => {
+            duplicateItem(trip.id, menuTarget.itemId)
+            void runOptimize(trip.id)
+          }}
+          onDelete={() => removeItem(trip.id, menuTarget.itemId)}
+          onOpenDetail={() => {
+            setFocusId(menuTarget.itemId)
+            setOpenItemId(menuTarget.itemId)
+          }}
+        />
       )}
     </div>
   )

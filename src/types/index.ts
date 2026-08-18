@@ -23,6 +23,9 @@ export interface TravelSegment {
   route?: GeoPoint[] // THE THREAD 描画用
 }
 
+/** MUST/WANT/AVOID の 3 段階。未設定はニュートラル（候補）を表す。 */
+export type SpotPriority = 'must' | 'want' | 'avoid'
+
 export interface Spot {
   id: string
   name: string
@@ -35,7 +38,15 @@ export interface Spot {
   priceLevel?: 1 | 2 | 3 | 4
   aiRecommended?: boolean
   source: 'user' | 'ai'
+  /** 旅程生成・再最適化時に AI が優先度として利用する。未設定＝候補。 */
+  priority?: SpotPriority
 }
+
+/**
+ * 旅程への組み込み状況を表す派生ステータス（Spot 自体には持たせない）。
+ * 「候補・行きたい・採用済み・完了・除外」は priority と itinerary 参加状況から計算する。
+ */
+export type SpotLifecycle = 'candidate' | 'wanted' | 'planned' | 'completed' | 'excluded'
 
 export interface ItineraryItem {
   id: string
@@ -124,11 +135,21 @@ export interface TripContext {
 
 export type QuestSeverity = 'info' | 'warn' | 'risk'
 
+/** TRIP CHECK の5分類。DayLoad/TripHealth の内訳とも対応させる。 */
+export type WarningCategory =
+  | 'opening_hours'
+  | 'travel_time'
+  | 'rest_margin'
+  | 'density'
+  | 'budget'
+
 /** Timeline 上の該当ノードに QuestChip として出す検証結果 */
 export interface ItineraryWarning {
   itemId: string
   severity: QuestSeverity
   message: string
+  /** TRIP CHECK での分類。未分類の警告（旧データ・外部由来）も許容するため任意。 */
+  category?: WarningCategory
 }
 
 export interface ReplanSuggestion {
@@ -144,11 +165,78 @@ export interface ReplanSuggestion {
     | { kind: 'shift'; minutes: number }
 }
 
+/**
+ * AI 提案の「変更」1 件分。構造化データとして表現し、文章だけに依存しない
+ * （30章 AI Architecture: User Request → AI → Structured Proposal → Validation
+ *   → Preview → User Approval → Store Mutation の Structured Proposal 部分）。
+ */
+export type AIProposalChange =
+  | { kind: 'move_item'; itemId: string; toDayId: string; label: string }
+  | {
+      kind: 'update_time'
+      itemId: string
+      plannedArrival?: string
+      plannedDeparture?: string
+      label: string
+    }
+  | { kind: 'reorder_day'; dayId: string; orderedItemIds: string[]; label: string }
+  | { kind: 'add_spot'; dayId: string; spot: Spot; plannedArrival?: string; label: string }
+  | { kind: 'remove_item'; itemId: string; label: string }
+  | { kind: 'adjust_budget'; category: BudgetCategory; value: number; label: string }
+
+/**
+ * ユーザー確認前の AI 提案。適用するまで Store には一切書き込まない。
+ * previewItinerary / previewBudget は「変更後の状態」を先に計算したプレビュー。
+ */
+export interface AIProposal {
+  id: string
+  /** 結論（一言） */
+  summary: string
+  /** 根拠。可能な限り数値で裏付ける（例: 「DAY2は移動時間が約3時間10分あります」） */
+  reason: string
+  benefits: string[]
+  drawbacks: string[]
+  changes: AIProposalChange[]
+  previewItinerary: ItineraryDay[]
+  previewBudgetPlanned?: Record<BudgetCategory, number>
+  estimatedTimeDeltaMin?: number
+  estimatedDistanceDeltaKm?: number
+  estimatedBudgetDelta?: number
+  /** 0–1。AI の自信度（モックでは経験則で算出） */
+  confidence: number
+}
+
+export interface TripHealthBreakdown {
+  moveEfficiency: number
+  openingHours: number
+  restMargin: number
+  budget: number
+  density: number
+  weatherResilience: number
+}
+
+export interface TripHealth {
+  score: number
+  breakdown: TripHealthBreakdown
+}
+
+export type LoadLevel = 'low' | 'medium' | 'high'
+
+export interface DayLoad {
+  dayId: string
+  score: number
+  level: LoadLevel
+}
+
 export interface AIAgentProvider {
   suggestSpots(context: TripContext): Promise<Spot[]>
   optimizeItinerary(trip: Trip): Promise<{ days: ItineraryDay[]; warnings: ItineraryWarning[] }>
   detectDelay(journey: JourneyState, trip: Trip): Promise<ReplanSuggestion[]>
   generateTravelogue(trip: Trip): Promise<MemoryEntry>
+  /** 自然言語での編集リクエストを、確認可能な構造化提案（複数可）に変換する。 */
+  proposeItineraryChanges(trip: Trip, request: string): Promise<AIProposal[]>
+  evaluateTripHealth(trip: Trip, warnings: ItineraryWarning[]): Promise<TripHealth>
+  evaluateDayLoad(trip: Trip): Promise<DayLoad[]>
 }
 
 export interface MapProvider {
