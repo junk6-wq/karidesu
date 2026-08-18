@@ -4,6 +4,7 @@ import type { ReplanSuggestion } from '@/types'
 import { useTrip, useTripsStore } from '@/store/tripsStore'
 import { buildContext, useJourneyStore } from '@/store/journeyStore'
 import { NextCard } from '@/components/journey/NextCard'
+import { TodayTimeline } from '@/components/journey/TodayTimeline'
 import { ReplanSheet } from '@/components/journey/ReplanSheet'
 import { Thread } from '@/components/thread/Thread'
 import { Button } from '@/components/common/Button'
@@ -16,7 +17,11 @@ const POLL_MS = 30_000
 
 /**
  * S08 — Journey / Next
- * 旅行中のメイン画面。他の予定は畳み、いま必要な 1 つだけを見せる。
+ *
+ * 「次の予定」を主役にしつつ、今日1日の予定は常時見える形で下に並べる
+ * （以前は折りたたみの中に隠れていたため、次の予定しか見えないという問題があった）。
+ * 片手操作を想定し、主要な操作（着いた/遅れそう/ルート）は画面下部に固定して
+ * 親指の届く範囲に置く。ヘッダーと進捗（THE THREAD）はスクロールしても常に見える。
  */
 export function JourneyScreen() {
   const { id } = useParams()
@@ -27,10 +32,11 @@ export function JourneyScreen() {
   const [suggestions, setSuggestions] = useState<ReplanSuggestion[]>([])
   const [replanOpen, setReplanOpen] = useState(false)
   const [replanLoading, setReplanLoading] = useState(false)
-  const [expanded, setExpanded] = useState(false)
   const dismissedFor = useRef<string | null>(null)
 
-  const journeyState = id ? (states[id] ?? { tripId: id, delayMinutes: 0, status: 'on_time' as const, lastUpdated: '' }) : undefined
+  const journeyState = id
+    ? (states[id] ?? { tripId: id, delayMinutes: 0, status: 'on_time' as const, lastUpdated: '' })
+    : undefined
 
   // 位置情報の購読と 30 秒ごとの再判定
   useEffect(() => {
@@ -91,25 +97,27 @@ export function JourneyScreen() {
     setReplanOpen(false)
   }
 
-  const progress = ctx.todayItems.length
-    ? ctx.doneCount / ctx.todayItems.length
-    : 1
+  const progress = ctx.todayItems.length ? ctx.doneCount / ctx.todayItems.length : 1
+  const dayComplete = !ctx.nextItem
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-ink text-text-porcelain">
-      {/* 背景は次の目的地の風景。取得できないときは海図のグラデーションに落ちる */}
+    <div className="relative min-h-dvh bg-ink text-text-porcelain">
+      {/* 背景写真は雰囲気づけ程度に留め、読みやすさを優先して濃いオーバーレイをかける */}
       <Photo
         src={ctx.nextSpot?.photoUrls[0]}
         alt=""
         seed={trip.title}
         className="absolute inset-0 h-full w-full"
-        imgClassName="scale-105 blur-[2px]"
+        imgClassName="scale-105 blur-[3px] opacity-70"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/80 to-ink" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/92 via-ink/90 to-ink" />
       </Photo>
 
-      <div className="relative flex min-h-dvh flex-col px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(20px,env(safe-area-inset-top))]">
-        <header className="flex items-center justify-between">
+      <div
+        className={`relative flex min-h-dvh flex-col ${dayComplete ? 'pb-8' : 'pb-[calc(84px+env(safe-area-inset-bottom))]'}`}
+      >
+        {/* ヘッダー: スクロールしても常に見える */}
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/8 bg-ink/70 px-5 py-3 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-md">
           <Link
             to={`/trip/${trip.id}`}
             className="tap label-caps -ml-2 flex items-center rounded-full px-2 text-text-porcelain/55"
@@ -121,83 +129,82 @@ export function JourneyScreen() {
           </span>
         </header>
 
-        <div className="flex flex-1 flex-col items-center justify-center py-10">
+        {/* 進捗: これも常時見える位置に固定気味に置く */}
+        <div className="px-5 pt-4">
+          <Thread variant="journey" progress={progress} status={status} showHead />
+          <div className="mono-readout mt-2.5 flex items-center justify-between text-[11px] text-text-porcelain/45">
+            <span>
+              {ctx.doneCount} / {ctx.todayItems.length} DONE
+            </span>
+            <span
+              className={
+                status === 'delayed'
+                  ? 'text-brick'
+                  : status === 'at_risk'
+                    ? 'text-[color:var(--c-amber)]'
+                    : ''
+              }
+            >
+              {delay > 0 ? `+${delay} MIN` : 'ON TIME'}
+            </span>
+          </div>
+        </div>
+
+        {/* NEXT: 主役だが画面を占有しすぎないコンパクトなカード */}
+        <div className="px-5 pb-6 pt-8">
           <NextCard
             spot={ctx.nextSpot}
             plannedArrival={ctx.nextItem?.plannedArrival}
             etaMin={ctx.etaMin}
             leaveInMin={ctx.leaveInMin}
             status={status}
+            compact
           />
+        </div>
 
-          {ctx.nextItem && (
-            <div className="mt-10 flex flex-wrap justify-center gap-2.5">
-              <Button variant="primary" onClick={markArrived}>
-                着いた
-              </Button>
-              <Button tone="dark" onClick={() => reportDelay(id!, 15)}>
-                遅れそう
-              </Button>
-              <Link
-                to={`/trip/${trip.id}/journey/route`}
-                className="tap inline-flex items-center justify-center rounded-full border border-white/25 px-5 text-[14px] font-semibold text-text-porcelain/90 hover:bg-white/10"
-              >
-                ルートを見る
-              </Link>
-            </div>
-          )}
+        {/* 今日の予定: 常時展開。「次の予定しか見えない」を解消する本体 */}
+        <div className="flex-1 px-5 pb-6">
+          <div className="rounded-card border border-white/10 bg-white/[0.04] p-4">
+            <p className="label-caps text-text-porcelain/45">今日の予定</p>
+            {ctx.todayItems.length > 0 ? (
+              <TodayTimeline
+                items={ctx.todayItems}
+                spots={trip.spots}
+                nextItemId={ctx.nextItem?.id}
+                className="mt-3"
+              />
+            ) : (
+              <p className="mt-2 text-[13px] text-text-porcelain/50">今日の予定はありません。</p>
+            )}
+          </div>
 
-          {!ctx.nextItem && (
-            <p className="mt-8 text-center text-[14px] text-text-porcelain/55">
+          {dayComplete && ctx.todayItems.length > 0 && (
+            <p className="mt-6 text-center text-[14px] text-text-porcelain/55">
               今日はここまで。ゆっくり休んでください。
             </p>
           )}
         </div>
-
-        {/* THE THREAD — 常時表示。現在地から次の目的地までを金色で塗る */}
-        <div className="pb-2 text-text-porcelain">
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="tap w-full text-left"
-            aria-expanded={expanded}
-          >
-            <Thread variant="journey" progress={progress} status={status} showHead />
-            <div className="mono-readout mt-3 flex items-center justify-between text-[11px] text-text-porcelain/45">
-              <span>
-                {ctx.doneCount} / {ctx.todayItems.length} DONE
-              </span>
-              <span>
-                {delay > 0 ? `+${delay} MIN` : 'ON TIME'} · {expanded ? '閉じる' : '今日の予定'}
-              </span>
-            </div>
-          </button>
-
-          {expanded && (
-            <ul className="anim-fade mt-4 space-y-1.5">
-              {ctx.todayItems.map((item) => {
-                const spot = trip.spots.find((s) => s.id === item.spotId)
-                const done = Boolean(item.actualArrival)
-                const isNext = item.id === ctx.nextItem?.id
-                return (
-                  <li
-                    key={item.id}
-                    className={`mono-readout flex items-center gap-3 text-[12px] ${
-                      done
-                        ? 'text-text-porcelain/35 line-through'
-                        : isNext
-                          ? 'text-brass'
-                          : 'text-text-porcelain/70'
-                    }`}
-                  >
-                    <span className="w-10 shrink-0">{item.plannedArrival ?? '--:--'}</span>
-                    <span className="truncate">{spot?.name ?? '—'}</span>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
       </div>
+
+      {/* 操作バー: 親指の届く画面下部に固定 */}
+      {!dayComplete && (
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-ink/85 px-5 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md">
+          <div className="mx-auto flex max-w-[520px] items-center justify-center gap-2.5">
+            <Button variant="primary" onClick={markArrived}>
+              着いた
+            </Button>
+            <Button tone="dark" onClick={() => reportDelay(id!, 15)}>
+              遅れそう
+            </Button>
+            <Link
+              to={`/trip/${trip.id}/journey/route`}
+              className="tap inline-flex items-center justify-center rounded-full border border-white/25 px-5 text-[14px] font-semibold text-text-porcelain/90 hover:bg-white/10"
+            >
+              ルート
+            </Link>
+          </div>
+        </div>
+      )}
 
       <ReplanSheet
         open={replanOpen}

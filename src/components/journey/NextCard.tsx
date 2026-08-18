@@ -15,7 +15,8 @@ const STATUS_COLOR: Record<JourneyStatus, string> = {
 
 /**
  * Next Card（S08 の中心コンポーネント）。
- * 情報を増やさず減らす。見えるのは「次にどこへ、あと何分か」だけ。
+ * 「次にどこへ、あと何分か」を最優先で見せる。
+ * compact は、今日の予定タイムラインと同じ画面に収めるための小さめサイズ。
  */
 export function NextCard({
   spot,
@@ -23,14 +24,29 @@ export function NextCard({
   etaMin,
   leaveInMin,
   status,
+  compact = false,
 }: {
   spot?: Spot
   plannedArrival?: string
   etaMin?: number
   leaveInMin?: number
   status: JourneyStatus
+  compact?: boolean
 }) {
   const color = STATUS_COLOR[status]
+  const nameLen = spot?.name.length ?? 0
+
+  const titleSize = compact
+    ? nameLen > 12
+      ? 'text-[22px]'
+      : nameLen > 7
+        ? 'text-[27px]'
+        : 'text-display-m'
+    : nameLen > 12
+      ? 'text-display-m'
+      : nameLen > 7
+        ? 'text-display-l'
+        : 'text-display-xl'
 
   return (
     <div className="anim-fade text-center">
@@ -39,26 +55,24 @@ export function NextCard({
       </p>
 
       {/* 長い地名でも 2 行に収まるよう、文字数で段階的に落とす */}
-      <h1
-        className={`font-display mt-3 leading-[1.05] ${
-          (spot?.name.length ?? 0) > 12
-            ? 'text-display-m'
-            : (spot?.name.length ?? 0) > 7
-              ? 'text-display-l'
-              : 'text-display-xl'
-        }`}
-      >
+      <h1 className={`font-display leading-[1.08] ${compact ? 'mt-2' : 'mt-3'} ${titleSize}`}>
         {spot?.name ?? '今日の予定は以上です'}
       </h1>
 
       {spot && (
         <>
-          <div className="mono-readout mt-6 flex items-center justify-center gap-5 text-[15px] text-text-porcelain/75">
+          <div
+            className={`mono-readout flex items-center justify-center text-[14px] text-text-porcelain/75 ${
+              compact ? 'mt-3 gap-4' : 'mt-6 gap-5'
+            }`}
+          >
             {plannedArrival && <span>⏱ {plannedArrival}</span>}
             {etaMin !== undefined && <span>{formatDuration(etaMin)}</span>}
           </div>
 
-          <p className="mt-7 flex items-center justify-center gap-2 text-[15px]">
+          <p
+            className={`flex items-center justify-center gap-2 text-[14px] ${compact ? 'mt-3' : 'mt-7'}`}
+          >
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ background: color, boxShadow: `0 0 12px ${color}` }}
