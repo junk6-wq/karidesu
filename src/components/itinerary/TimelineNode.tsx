@@ -3,7 +3,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { ItineraryItem, ItineraryWarning, Spot, TravelSegment } from '@/types'
 import { Photo } from '@/components/common/Photo'
 import { QuestChip } from '@/components/common/QuestChip'
-import { formatDuration } from '@/lib/time'
+import { formatDuration, toMinutes } from '@/lib/time'
 import { formatKm } from '@/lib/format'
 
 const MODE_LABEL: Record<string, string> = {
@@ -22,6 +22,13 @@ const TYPE_LABEL: Record<ItineraryItem['type'], string> = {
   transit: '移動',
 }
 
+const PRIORITY_LABEL: Record<string, string> = { must: 'MUST', want: 'WANT', avoid: 'AVOID' }
+const PRIORITY_STYLE: Record<string, string> = {
+  must: 'bg-brass/20 text-[#7a5f2b]',
+  want: 'bg-black/[0.06] text-text-ink/55',
+  avoid: 'bg-brick/10 text-brick',
+}
+
 export type NodeState = 'done' | 'next' | 'future'
 
 /**
@@ -36,6 +43,9 @@ export function TimelineNode({
   onOpen,
   focused,
   sortable = true,
+  onMenu,
+  nextPlannedArrival,
+  onRequestFreeTimeIdea,
 }: {
   item: ItineraryItem
   spot?: Spot
@@ -44,6 +54,11 @@ export function TimelineNode({
   onOpen: () => void
   focused?: boolean
   sortable?: boolean
+  /** 「⋮」クイックメニューを開く。省略時はボタンを表示しない。 */
+  onMenu?: () => void
+  /** 空き時間・遅延余裕の計算に使う、次の予定の到着予定時刻。 */
+  nextPlannedArrival?: string
+  onRequestFreeTimeIdea?: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -65,7 +80,7 @@ export function TimelineNode({
         : 'bg-stone border-black/25'
 
   return (
-    <li ref={setNodeRef} style={style} className="relative flex gap-3">
+    <li id={item.id} ref={setNodeRef} style={style} className="relative flex scroll-mt-28 gap-3">
       {/* THE THREAD の縦線 + ノード */}
       <div className="flex w-6 shrink-0 flex-col items-center pt-5">
         <span className={`h-3 w-3 shrink-0 rounded-full border-2 ${dotClass}`} />
@@ -102,6 +117,13 @@ export function TimelineNode({
                 <span className="rounded-full bg-black/[0.06] px-1.5 py-0.5 text-text-ink/50">
                   {TYPE_LABEL[item.type]}
                 </span>
+                {spot?.priority && (
+                  <span
+                    className={`label-caps rounded-full px-1.5 py-0.5 ${PRIORITY_STYLE[spot.priority]}`}
+                  >
+                    {PRIORITY_LABEL[spot.priority]}
+                  </span>
+                )}
               </span>
               <span className="mt-1 block truncate text-[16px] font-semibold">
                 {spot?.name ?? '不明なスポット'}
@@ -113,17 +135,32 @@ export function TimelineNode({
               )}
             </span>
 
-            {sortable && (
-              <span
-                {...attributes}
-                {...listeners}
-                aria-label="並べ替え"
-                onClick={(e) => e.stopPropagation()}
-                className="tap flex w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/25 active:cursor-grabbing"
-              >
-                ⠿
-              </span>
-            )}
+            <span className="flex shrink-0 items-center gap-1">
+              {onMenu && (
+                <span
+                  role="button"
+                  aria-label="メニューを開く"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onMenu()
+                  }}
+                  className="tap flex h-8 w-8 items-center justify-center rounded-full text-[18px] leading-none text-text-ink/35 hover:bg-black/[0.05]"
+                >
+                  ⋮
+                </span>
+              )}
+              {sortable && (
+                <span
+                  {...attributes}
+                  {...listeners}
+                  aria-label="並べ替え"
+                  onClick={(e) => e.stopPropagation()}
+                  className="tap flex w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/25 active:cursor-grabbing"
+                >
+                  ⠿
+                </span>
+              )}
+            </span>
           </button>
 
           {warnings.length > 0 && (
@@ -137,18 +174,72 @@ export function TimelineNode({
           )}
         </div>
 
-        {item.travelToNext && <TravelRow segment={item.travelToNext} />}
+        {item.travelToNext && (
+          <TravelRow
+            segment={item.travelToNext}
+            departure={item.plannedDeparture ?? item.plannedArrival}
+            nextArrival={nextPlannedArrival}
+            onRequestIdea={onRequestFreeTimeIdea}
+          />
+        )}
       </div>
     </li>
   )
 }
 
-function TravelRow({ segment }: { segment: TravelSegment }) {
+/** 車移動時の概算ガソリン代（燃費 14km/L・レギュラー170円/L を仮定した目安値）。 */
+function estimateGasCost(distanceKm: number): number {
+  return Math.round((distanceKm / 14) * 170)
+}
+
+function TravelRow({
+  segment,
+  departure,
+  nextArrival,
+  onRequestIdea,
+}: {
+  segment: TravelSegment
+  departure?: string
+  nextArrival?: string
+  onRequestIdea?: () => void
+}) {
+  const departureMin = toMinutes(departure)
+  const nextArrivalMin = toMinutes(nextArrival)
+  const freeMin =
+    departureMin !== undefined && nextArrivalMin !== undefined
+      ? nextArrivalMin - departureMin - segment.durationMin
+      : undefined
+  const showFreeTime = freeMin !== undefined && freeMin >= 15
+
   return (
-    <div className="mono-readout flex items-center gap-2 py-2 pl-1 text-[11px] text-text-ink/45">
-      <span>{MODE_LABEL[segment.mode] ?? '移動'}</span>
-      <span className="text-brass">{formatDuration(segment.durationMin)}</span>
-      {segment.distanceKm !== undefined && <span>{formatKm(segment.distanceKm)}</span>}
+    <div className="py-1">
+      <div className="mono-readout flex items-center gap-2 py-1 pl-1 text-[11px] text-text-ink/45">
+        <span>{MODE_LABEL[segment.mode] ?? '移動'}</span>
+        <span className="text-brass">{formatDuration(segment.durationMin)}</span>
+        {segment.distanceKm !== undefined && <span>{formatKm(segment.distanceKm)}</span>}
+        {segment.mode === 'car' && segment.distanceKm !== undefined && (
+          <span className="text-text-ink/30">
+            ガソリン代 約{estimateGasCost(segment.distanceKm).toLocaleString('ja-JP')}円
+            <span className="ml-1 rounded-full bg-black/[0.05] px-1.5 py-0.5 text-[9px] text-text-ink/40">
+              推定
+            </span>
+          </span>
+        )}
+      </div>
+
+      {showFreeTime && (
+        <div className="mono-readout flex items-center gap-2 py-1 pl-1 text-[11px] text-text-ink/40">
+          <span>◇ 自由時間 {formatDuration(freeMin)}</span>
+          {onRequestIdea && freeMin >= 60 && (
+            <button
+              onClick={onRequestIdea}
+              className="tap rounded-full border border-black/12 px-2 py-0.5 text-[10px] text-text-ink/55 transition duration-200 ease-passage hover:border-brass"
+            >
+              AIに候補を出してもらう
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

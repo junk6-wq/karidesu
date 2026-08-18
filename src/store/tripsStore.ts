@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type {
+  AIProposal,
   Budget,
   BudgetCategory,
   Companion,
@@ -8,14 +9,16 @@ import type {
   ItineraryWarning,
   MemoryEntry,
   Spot,
+  SpotPriority,
   Trip,
   TripStatus,
 } from '@/types'
 import { uid } from '@/lib/id'
 import { load, save } from '@/lib/storage/local'
-import { dateRange, daysUntil } from '@/lib/time'
+import { addMinutes, dateRange, daysUntil } from '@/lib/time'
 import { aiAgent } from '@/lib/providers/mockAgent'
 import { seedTrips } from '@/lib/seedTrips'
+import { applyChangesToItinerary } from '@/lib/aiProposals'
 
 const STORAGE_KEY = 'trips'
 
@@ -72,6 +75,14 @@ interface TripsState {
   addCompanion(tripId: string, name: string): void
   removeCompanion(tripId: string, companionId: string): void
   setCompanionRole(tripId: string, companionId: string, role: Companion['role']): void
+
+  /** AI 提案をユーザーが承認した後に、旅程・予算へ一括反映する。 */
+  applyProposal(tripId: string, proposal: AIProposal): void
+  setSpotPriority(tripId: string, spotId: string, priority: SpotPriority | undefined): void
+  /** 予定を複製し、同じ日の直後に少し後ろの時間で挿入する。 */
+  duplicateItem(tripId: string, itemId: string): void
+  moveItemUp(tripId: string, dayId: string, itemId: string): void
+  moveItemDown(tripId: string, dayId: string, itemId: string): void
 }
 
 function persist(trips: Trip[]) {
@@ -361,6 +372,107 @@ export const useTripsStore = create<TripsState>((set, get) => ({
           })
         : t,
     )
+    set({ trips: next })
+    persist(next)
+  },
+
+  applyProposal(tripId, proposal) {
+    const next = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      // add_spot 系の変更は新規 Spot も一緒に持ってくるので、trip.spots にも登録する
+      const newSpots = proposal.changes.flatMap((c) => (c.kind === 'add_spot' ? [c.spot] : []))
+      const spots = newSpots.length ? [...t.spots, ...newSpots] : t.spots
+
+      const itinerary = applyChangesToItinerary(t.itinerary, proposal.changes)
+
+      const budgetChange = proposal.changes.find((c) => c.kind === 'adjust_budget')
+      const budget =
+        budgetChange && budgetChange.kind === 'adjust_budget'
+          ? { ...t.budget, planned: { ...t.budget.planned, [budgetChange.category]: budgetChange.value } }
+          : t.budget
+
+      return touch({ ...t, spots, itinerary, budget })
+    })
+    set({ trips: next })
+    persist(next)
+  },
+
+  setSpotPriority(tripId, spotId, priority) {
+    const next = get().trips.map((t) =>
+      t.id === tripId
+        ? touch({
+            ...t,
+            spots: t.spots.map((s) => (s.id === spotId ? { ...s, priority } : s)),
+          })
+        : t,
+    )
+    set({ trips: next })
+    persist(next)
+  },
+
+  duplicateItem(tripId, itemId) {
+    const next = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      return touch({
+        ...t,
+        itinerary: t.itinerary.map((d) => {
+          const index = d.items.findIndex((i) => i.id === itemId)
+          if (index === -1) return d
+          const original = d.items[index]
+          const copy: ItineraryItem = {
+            ...original,
+            id: uid('item'),
+            plannedArrival: original.plannedArrival ? addMinutes(original.plannedArrival, 30) : undefined,
+            plannedDeparture: original.plannedDeparture
+              ? addMinutes(original.plannedDeparture, 30)
+              : undefined,
+            actualArrival: undefined,
+            actualDeparture: undefined,
+          }
+          const items = [...d.items]
+          items.splice(index + 1, 0, copy)
+          return { ...d, items }
+        }),
+      })
+    })
+    set({ trips: next })
+    persist(next)
+  },
+
+  moveItemUp(tripId, dayId, itemId) {
+    const next = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      return touch({
+        ...t,
+        itinerary: t.itinerary.map((d) => {
+          if (d.id !== dayId) return d
+          const index = d.items.findIndex((i) => i.id === itemId)
+          if (index <= 0) return d
+          const items = [...d.items]
+          ;[items[index - 1], items[index]] = [items[index], items[index - 1]]
+          return { ...d, items }
+        }),
+      })
+    })
+    set({ trips: next })
+    persist(next)
+  },
+
+  moveItemDown(tripId, dayId, itemId) {
+    const next = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      return touch({
+        ...t,
+        itinerary: t.itinerary.map((d) => {
+          if (d.id !== dayId) return d
+          const index = d.items.findIndex((i) => i.id === itemId)
+          if (index === -1 || index >= d.items.length - 1) return d
+          const items = [...d.items]
+          ;[items[index], items[index + 1]] = [items[index + 1], items[index]]
+          return { ...d, items }
+        }),
+      })
+    })
     set({ trips: next })
     persist(next)
   },
