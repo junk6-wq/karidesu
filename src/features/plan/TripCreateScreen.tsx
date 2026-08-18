@@ -14,6 +14,7 @@ import {
 } from '@/lib/providers/spotSeeds'
 import { dateRange, formatDuration, toISODate } from '@/lib/time'
 import { useTripsStore } from '@/store/tripsStore'
+import { usePreferencesStore } from '@/store/preferencesStore'
 
 type Step = 0 | 1 | 2 | 3
 
@@ -45,9 +46,13 @@ export function TripCreateScreen() {
   const dd = useMemo(defaultDates, [])
   const [startDate, setStartDate] = useState(dd.start)
   const [endDate, setEndDate] = useState(dd.end)
-  const [interests, setInterests] = useState<string[]>(['自然', '食'])
-  const [pace, setPace] = useState<TripContext['pace']>('balanced')
-  const [companions, setCompanions] = useState(2)
+  // 設定画面（旅行スタイル）に登録済みの好みがあれば、それを初期値として使う
+  const travelStyle = useMemo(() => usePreferencesStore.getState().preferences.travelStyle, [])
+  const [interests, setInterests] = useState<string[]>(
+    travelStyle.interests.length > 0 ? travelStyle.interests : ['自然', '食'],
+  )
+  const [pace, setPace] = useState<TripContext['pace']>(travelStyle.pace)
+  const [companions, setCompanions] = useState(travelStyle.defaultPartySize)
 
   const [thinking, setThinking] = useState(false)
   const [proposals, setProposals] = useState<Spot[]>([])
