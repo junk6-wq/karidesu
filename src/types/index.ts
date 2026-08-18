@@ -156,3 +156,63 @@ export interface MapProvider {
   getRoute(from: GeoPoint, to: GeoPoint, mode: TravelMode): Promise<TravelSegment>
   watchCurrentLocation(cb: (p: GeoPoint) => void): () => void
 }
+
+/* --- ユーザー設定（Settings 画面） --- */
+
+/** 基本の移動手段。徒歩・バスは「基本」の選択肢としては細かすぎるため除外する。 */
+export type DefaultTravelMode = 'car' | 'train' | 'flight' | 'other'
+
+/** 旅のテンポ。TripContext の pace と同じ語彙を使い、AI ヒアリングの初期値と揃える。 */
+export type PaceLevel = 'relaxed' | 'balanced' | 'packed'
+
+/** ユーザーの基本的な旅行嗜好。Trip ではなくアプリ全体に紐づく。 */
+export interface TravelStylePreferences {
+  /** 出発地（例: 水戸）。自由入力。 */
+  departure: string
+  defaultTravelMode: DefaultTravelMode
+  defaultPartySize: number
+  /** 好みのジャンル。spotSeeds の INTEREST_TAGS と同じ語彙を使う。 */
+  interests: string[]
+  pace: PaceLevel
+  /** 1 日の運転時間の上限（分）。undefined は「特に制限なし」。 */
+  driveLimitMin?: number
+  /** 早朝から動きたいか。 */
+  earlyStart: boolean
+  /** 夜遅くまで行動したいか。 */
+  lateNight: boolean
+  /** 自然文でのこだわりメモ。将来 AI が読み取る前提の自由記述欄（現状は保存のみ）。 */
+  freeNotes: string
+}
+
+/** AI が旅程を作る際に踏まえてほしいルール。 */
+export interface PlanningRulePreferences {
+  /** 1 スポットあたりの標準滞在時間（分）。 */
+  standardStayMin: number
+  /** 食事にかける時間（分）。 */
+  mealDurationMin: number
+  /** 移動時間に余裕を持たせる。 */
+  bufferTime: boolean
+  /** 予定を詰め込みすぎない。 */
+  avoidOverpacking: boolean
+  /** 同じエリアの予定をまとめる。 */
+  groupByArea: boolean
+  /** 雨天時の代替候補を優先する。 */
+  preferRainyAlternatives: boolean
+}
+
+/** AI 監視機能ごとの利用意向。バックエンド未実装のため、値は「実装され次第使いたいか」を表す。 */
+export interface MonitoringPreferences {
+  openingHours: boolean
+  weather: boolean
+  traffic: boolean
+  hotelPrice: boolean
+  reservation: boolean
+  planSuggestion: boolean
+  issueNotify: boolean
+}
+
+export interface AppPreferences {
+  travelStyle: TravelStylePreferences
+  planningRules: PlanningRulePreferences
+  monitoring: MonitoringPreferences
+}

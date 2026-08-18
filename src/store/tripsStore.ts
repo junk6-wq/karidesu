@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type {
   Budget,
   BudgetCategory,
+  Companion,
   ItineraryDay,
   ItineraryItem,
   ItineraryWarning,
@@ -67,6 +68,10 @@ interface TripsState {
 
   runOptimize(tripId: string): Promise<void>
   setMemory(tripId: string, memory: MemoryEntry): void
+
+  addCompanion(tripId: string, name: string): void
+  removeCompanion(tripId: string, companionId: string): void
+  setCompanionRole(tripId: string, companionId: string, role: Companion['role']): void
 }
 
 function persist(trips: Trip[]) {
@@ -322,6 +327,40 @@ export const useTripsStore = create<TripsState>((set, get) => ({
 
   setMemory(tripId, memory) {
     const next = get().trips.map((t) => (t.id === tripId ? touch({ ...t, memory }) : t))
+    set({ trips: next })
+    persist(next)
+  },
+
+  addCompanion(tripId, name) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const companion: Companion = { id: uid('cmp'), name: trimmed, role: 'member' }
+    const next = get().trips.map((t) =>
+      t.id === tripId ? touch({ ...t, companions: [...t.companions, companion] }) : t,
+    )
+    set({ trips: next })
+    persist(next)
+  },
+
+  removeCompanion(tripId, companionId) {
+    const next = get().trips.map((t) =>
+      t.id === tripId
+        ? touch({ ...t, companions: t.companions.filter((c) => c.id !== companionId) })
+        : t,
+    )
+    set({ trips: next })
+    persist(next)
+  },
+
+  setCompanionRole(tripId, companionId, role) {
+    const next = get().trips.map((t) =>
+      t.id === tripId
+        ? touch({
+            ...t,
+            companions: t.companions.map((c) => (c.id === companionId ? { ...c, role } : c)),
+          })
+        : t,
+    )
     set({ trips: next })
     persist(next)
   },
