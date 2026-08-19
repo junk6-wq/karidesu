@@ -9,7 +9,7 @@ import { usePreferencesStore } from '@/store/preferencesStore'
 
 /**
  * 既存の旅にスポットを足すときのデッキ画面。
- * 一覧から選ばせるのではなく、Trip 作成時と同じ「右へスワイプで行く」に揃える。
+ * 一覧から選ばせるのではなく、Trip 作成時と同じ「1枚ずつ見てタップで決める」に揃える。
  * 選び終わったら予定の少ない日へ自動で振り分け、続けて AI が時間と移動を整える。
  */
 export function SpotPickScreen() {
@@ -74,9 +74,9 @@ export function SpotPickScreen() {
         </div>
 
         <main className="mt-8 flex flex-1 flex-col">
-          <h1 className="font-display text-display-l">行きたい方へスワイプ</h1>
+          <h1 className="font-display text-display-l">1つずつ、行くか決める</h1>
           <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-            右で「行く」、左で「見送る」。選んだ場所は空いている日に入れて、時間は AI が整えます。
+            ♥ で「行く」、✕ で「見送る」。選んだ場所は空いている日に入れて、時間は AI が整えます。
           </p>
 
           {loading ? (

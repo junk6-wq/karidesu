@@ -484,7 +484,7 @@ export function TripCreateScreen() {
             <section className="flex h-full flex-col">
               <p className="label-caps text-brass">STEP 04</p>
               <h1 className="font-display text-display-l mt-2">
-                {thinking ? '候補を探しています' : '行きたい方へスワイプ'}
+                {thinking ? '候補を探しています' : '1つずつ、行くか決める'}
               </h1>
 
               {thinking ? (
@@ -507,7 +507,7 @@ export function TripCreateScreen() {
               ) : (
                 <>
                   <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-                    右で「行く」、左で「見送る」。順番と時間はあとで AI が組み立てます。
+                    ♥ で「行く」、✕ で「見送る」。順番と時間はあとで AI が組み立てます。
                   </p>
                   <div className="mt-5 flex flex-1 flex-col">
                     <SpotDeck spots={proposals} onFinish={finish} finishLabel="この旅をつくる" />
