@@ -1,4 +1,3 @@
-import { useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ItineraryItem, ItineraryWarning, Spot, TravelSegment } from '@/types'
@@ -32,11 +31,6 @@ const PRIORITY_STYLE: Record<string, string> = {
 
 export type NodeState = 'done' | 'next' | 'future'
 
-/** 横スワイプで日を移すと判定する距離（px）。 */
-const DAY_SWIPE = 80
-/** これ以上動いたらタップではなくスワイプ扱いにする（px）。 */
-const SWIPE_SLOP = 10
-
 /**
  * Timeline Node（7章）。訪問済み / 次 / 未来で状態が変わる。
  * ノード間は THE THREAD の点線で繋がる。
@@ -52,9 +46,6 @@ export function TimelineNode({
   onMenu,
   nextPlannedArrival,
   onRequestFreeTimeIdea,
-  onMoveDay,
-  canPrevDay = false,
-  canNextDay = false,
 }: {
   item: ItineraryItem
   spot?: Spot
@@ -68,10 +59,6 @@ export function TimelineNode({
   /** 空き時間・遅延余裕の計算に使う、次の予定の到着予定時刻。 */
   nextPlannedArrival?: string
   onRequestFreeTimeIdea?: () => void
-  /** 横スワイプで前後の日へ移す。省略時はスワイプを受け付けない。 */
-  onMoveDay?: (direction: 'prev' | 'next') => void
-  canPrevDay?: boolean
-  canNextDay?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -92,49 +79,6 @@ export function TimelineNode({
         ? 'bg-brass border-brass ring-[6px] ring-brass/20'
         : 'bg-stone border-black/25'
 
-  // 横スワイプで日を移す。縦スクロールを邪魔しないよう touch-action: pan-y にし、
-  // 一定距離動くまではタップとして扱う（動いたらその後の click は打ち消す）。
-  const swipeStartX = useRef<number | null>(null)
-  const swiped = useRef(false)
-  const [swipeDx, setSwipeDx] = useState(0)
-
-  const swipeEnabled = Boolean(onMoveDay) && (canPrevDay || canNextDay)
-  const swipeIntent: 'prev' | 'next' | null =
-    swipeDx <= -DAY_SWIPE && canNextDay ? 'next' : swipeDx >= DAY_SWIPE && canPrevDay ? 'prev' : null
-
-  function onSwipeDown(e: React.PointerEvent) {
-    if (!swipeEnabled) return
-    swipeStartX.current = e.clientX
-    swiped.current = false
-  }
-
-  function onSwipeMove(e: React.PointerEvent) {
-    if (swipeStartX.current === null) return
-    const d = e.clientX - swipeStartX.current
-    if (!swiped.current && Math.abs(d) > SWIPE_SLOP) {
-      swiped.current = true
-      e.currentTarget.setPointerCapture(e.pointerId)
-    }
-    if (!swiped.current) return
-    // 行き止まりの方向へは引っ張られている感触だけ返し、実際には動かさない
-    const blocked = (d < 0 && !canNextDay) || (d > 0 && !canPrevDay)
-    setSwipeDx(blocked ? d * 0.25 : d)
-  }
-
-  function onSwipeUp() {
-    if (swipeStartX.current === null) return
-    swipeStartX.current = null
-    const intent = swipeIntent
-    setSwipeDx(0)
-    if (intent) onMoveDay?.(intent)
-  }
-
-  function onClickCapture(e: React.MouseEvent) {
-    if (!swiped.current) return
-    e.preventDefault()
-    e.stopPropagation()
-  }
-
   return (
     <li id={item.id} ref={setNodeRef} style={style} className="relative flex scroll-mt-28 gap-3">
       {/* THE THREAD の縦線 + ノード */}
@@ -153,30 +97,10 @@ export function TimelineNode({
       </div>
 
       <div className="relative min-w-0 flex-1 pb-2">
-        {/* スワイプ中に、どちらの日へ移るのかを離す前に見せる */}
-        {swipeIntent && (
-          <span
-            className={`label-caps pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-brass px-3 py-1.5 text-[10px] text-ink ${
-              swipeIntent === 'next' ? 'right-3' : 'left-3'
-            }`}
-          >
-            {swipeIntent === 'next' ? '翌日へ →' : '← 前日へ'}
-          </span>
-        )}
         <div
-          onPointerDown={onSwipeDown}
-          onPointerMove={onSwipeMove}
-          onPointerUp={onSwipeUp}
-          onPointerCancel={onSwipeUp}
-          onClickCapture={onClickCapture}
           className={`overflow-hidden rounded-2xl border bg-white/70 transition duration-200 ease-passage ${
             focused ? 'border-brass shadow-card' : 'border-black/8'
           }`}
-          style={{
-            transform: swipeDx ? `translateX(${swipeDx}px)` : undefined,
-            transition: swipeDx ? 'none' : undefined,
-            touchAction: swipeEnabled ? 'pan-y' : undefined,
-          }}
         >
           <button onClick={onOpen} className="flex w-full items-stretch gap-3 p-2.5 text-left">
             <Photo
@@ -228,7 +152,7 @@ export function TimelineNode({
                   ⋮
                 </span>
               )}
-              {/* ドラッグはポインタ操作向け。スマホではスワイプと「⋮」で足りるので出さない */}
+              {/* ドラッグはポインタ操作向け。スマホでは扱いにくいので「⋮」の上へ/下へ移動に任せる */}
               {sortable && (
                 <span
                   {...attributes}

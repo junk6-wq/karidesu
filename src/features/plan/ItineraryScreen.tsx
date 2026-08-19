@@ -47,7 +47,6 @@ export function ItineraryScreen() {
     agentBusy,
     moveItemUp,
     moveItemDown,
-    moveItemToDay,
     duplicateItem,
     removeItem,
   } = useTripsStore()
@@ -189,11 +188,6 @@ export function ItineraryScreen() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
         {/* grid の子は min-width:auto で中身に押し広げられるため、min-w-0 で列を縮められるようにする */}
         <div className={`min-w-0 ${mobileTab === 'map' ? 'hidden lg:block' : ''}`}>
-          {trip.itinerary.length > 1 && (
-            <p className="mono-readout mb-4 text-[11px] text-text-ink/35">
-              ← → 横にスワイプすると、前後の日へ動かせます
-            </p>
-          )}
           {trip.itinerary.map((day, dayIndex) => (
             <section key={day.id} id={day.id} className="mb-9 scroll-mt-28">
               <div className="mb-3 flex items-baseline gap-3">
@@ -219,8 +213,7 @@ export function ItineraryScreen() {
                   items={day.items.map((i) => i.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {/* スワイプ中のカードが画面外へはみ出し、横スクロールを生むのを防ぐ */}
-                  <ul className="list-none [overflow-x:clip]">
+                  <ul className="list-none">
                     {day.items.map((item, itemIndex) => (
                       <TimelineNode
                         key={item.id}
@@ -246,15 +239,6 @@ export function ItineraryScreen() {
                             spotName: spotById.get(item.spotId)?.name ?? '予定',
                           })
                         }
-                        canPrevDay={dayIndex > 0}
-                        canNextDay={dayIndex < trip!.itinerary.length - 1}
-                        onMoveDay={(direction) => {
-                          const target =
-                            trip!.itinerary[dayIndex + (direction === 'next' ? 1 : -1)]
-                          if (!target) return
-                          moveItemToDay(trip!.id, item.id, target.id)
-                          void runOptimize(trip!.id)
-                        }}
                       />
                     ))}
                   </ul>
