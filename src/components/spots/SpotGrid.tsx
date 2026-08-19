@@ -39,7 +39,8 @@ export function SpotGrid({
         <span className="mono-readout text-[12px] text-brass">{taken.length} 件えらんだ</span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {/* 写真で行くか判断できるよう、1〜2列に絞って1枚あたりを大きく見せる */}
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {spots.map((spot) => {
           const on = selected.has(spot.id)
           return (
@@ -54,25 +55,26 @@ export function SpotGrid({
                 src={spot.photoUrls[0]}
                 alt={spot.name}
                 seed={spot.name}
-                className="aspect-[4/3] w-full"
+                className="aspect-[5/4] w-full"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/15 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
                 <span
-                  className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-[13px] transition duration-200 ease-passage ${
-                    on ? 'bg-brass text-ink' : 'bg-black/40 text-text-porcelain/70'
+                  className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-[16px] transition duration-200 ease-passage ${
+                    on ? 'bg-brass text-ink' : 'bg-black/45 text-text-porcelain/80'
                   }`}
                 >
                   {on ? '✓' : '＋'}
                 </span>
-                <span className="label-caps absolute left-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[9px] text-text-porcelain/85">
+                <span className="label-caps absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-text-porcelain/85">
                   {spot.category}
                 </span>
-                <div className="absolute inset-x-0 bottom-0 p-2.5">
-                  <p className="truncate text-[13px] font-semibold leading-tight text-text-porcelain">
+                <div className="absolute inset-x-0 bottom-0 p-3.5">
+                  <p className="truncate text-[16px] font-semibold leading-tight text-text-porcelain">
                     {spot.name}
                   </p>
-                  <p className="mono-readout mt-0.5 text-[10px] text-text-porcelain/60">
-                    {formatDuration(spot.estimatedStayMin ?? 60)}
+                  <p className="mono-readout mt-1 text-[11px] text-text-porcelain/65">
+                    滞在 {formatDuration(spot.estimatedStayMin ?? 60)}
+                    {spot.openingHours ? ` · ${spot.openingHours}` : ''}
                   </p>
                 </div>
               </Photo>
