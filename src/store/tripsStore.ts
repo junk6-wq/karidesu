@@ -59,6 +59,12 @@ interface TripsState {
   addSpot(tripId: string, spot: Omit<Spot, 'id'>): Spot
   updateSpot(tripId: string, spotId: string, patch: Partial<Spot>): void
   removeSpot(tripId: string, spotId: string): void
+  /**
+   * 選んだスポットをまとめて追加し、予定の少ない日から順に振り分ける。
+   * 時間は各日の最後の予定の続きに置くだけの粗い配置で、
+   * 実際の並び・移動時間の調整は呼び出し側の runOptimize に任せる。
+   */
+  addSpotsAndArrange(tripId: string, spots: Omit<Spot, 'id'>[]): void
 
   addItem(tripId: string, dayId: string, item: Omit<ItineraryItem, 'id'>): void
   updateItem(tripId: string, itemId: string, patch: Partial<ItineraryItem>): void
@@ -165,6 +171,40 @@ export const useTripsStore = create<TripsState>((set, get) => ({
     set({ trips: next })
     persist(next)
     return created
+  },
+
+  addSpotsAndArrange(tripId, spots) {
+    if (spots.length === 0) return
+    const next = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      if (t.itinerary.length === 0) return t
+
+      const created: Spot[] = spots.map((s) => ({ ...s, id: uid('spot') }))
+      // 元の順番を保ったまま日を割り当てるため、items は使い回さずコピーしておく
+      const days = t.itinerary.map((d) => ({ ...d, items: [...d.items] }))
+
+      created.forEach((spot) => {
+        // 予定がいちばん少ない日へ。同数なら前の日から埋める
+        let target = days[0]
+        days.forEach((d) => {
+          if (d.items.length < target.items.length) target = d
+        })
+        const last = target.items[target.items.length - 1]
+        const base = last?.plannedDeparture ?? last?.plannedArrival
+        const arrival = base ? addMinutes(base, 40) : '09:30'
+        target.items.push({
+          id: uid('item'),
+          spotId: spot.id,
+          type: spot.category === '食事' ? 'meal' : 'sightseeing',
+          plannedArrival: arrival,
+          plannedDeparture: addMinutes(arrival, spot.estimatedStayMin ?? 60),
+        })
+      })
+
+      return touch({ ...t, spots: [...t.spots, ...created], itinerary: days })
+    })
+    set({ trips: next })
+    persist(next)
   },
 
   updateSpot(tripId, spotId, patch) {

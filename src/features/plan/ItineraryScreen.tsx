@@ -47,6 +47,7 @@ export function ItineraryScreen() {
     agentBusy,
     moveItemUp,
     moveItemDown,
+    moveItemToDay,
     duplicateItem,
     removeItem,
   } = useTripsStore()
@@ -145,9 +146,14 @@ export function ItineraryScreen() {
           <p className="label-caps text-text-ink/45">DAY BY DAY</p>
           <h1 className="font-display text-display-m mt-1">旅程</h1>
         </div>
-        <Button onClick={() => id && runOptimize(id)} disabled={agentBusy}>
-          {agentBusy ? '検証中…' : 'AI に検証させる'}
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="primary" onClick={() => navigate(`/trip/${trip.id}/pick`)}>
+            ＋ 足す
+          </Button>
+          <Button onClick={() => id && runOptimize(id)} disabled={agentBusy}>
+            {agentBusy ? '検証中…' : 'AI 検証'}
+          </Button>
+        </div>
       </div>
 
       {/* 画面を開いて最初に目に入る位置に、旅程全体の状態をひと目で置く（29章 3. 視線誘導） */}
@@ -181,7 +187,13 @@ export function ItineraryScreen() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
-        <div className={mobileTab === 'map' ? 'hidden lg:block' : ''}>
+        {/* grid の子は min-width:auto で中身に押し広げられるため、min-w-0 で列を縮められるようにする */}
+        <div className={`min-w-0 ${mobileTab === 'map' ? 'hidden lg:block' : ''}`}>
+          {trip.itinerary.length > 1 && (
+            <p className="mono-readout mb-4 text-[11px] text-text-ink/35">
+              ← → 横にスワイプすると、前後の日へ動かせます
+            </p>
+          )}
           {trip.itinerary.map((day, dayIndex) => (
             <section key={day.id} id={day.id} className="mb-9 scroll-mt-28">
               <div className="mb-3 flex items-baseline gap-3">
@@ -207,7 +219,8 @@ export function ItineraryScreen() {
                   items={day.items.map((i) => i.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <ul className="list-none">
+                  {/* スワイプ中のカードが画面外へはみ出し、横スクロールを生むのを防ぐ */}
+                  <ul className="list-none [overflow-x:clip]">
                     {day.items.map((item, itemIndex) => (
                       <TimelineNode
                         key={item.id}
@@ -233,6 +246,15 @@ export function ItineraryScreen() {
                             spotName: spotById.get(item.spotId)?.name ?? '予定',
                           })
                         }
+                        canPrevDay={dayIndex > 0}
+                        canNextDay={dayIndex < trip!.itinerary.length - 1}
+                        onMoveDay={(direction) => {
+                          const target =
+                            trip!.itinerary[dayIndex + (direction === 'next' ? 1 : -1)]
+                          if (!target) return
+                          moveItemToDay(trip!.id, item.id, target.id)
+                          void runOptimize(trip!.id)
+                        }}
                       />
                     ))}
                   </ul>
