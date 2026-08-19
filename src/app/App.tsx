@@ -13,12 +13,14 @@ import { MemoryScreen } from '@/features/memory/MemoryScreen'
 import { MemoryStatsScreen } from '@/features/memory/MemoryStatsScreen'
 import { ShareScreen } from '@/features/memory/ShareScreen'
 import { SettingsScreen } from '@/features/settings/SettingsScreen'
+import { WishlistScreen } from '@/features/wishlist/WishlistScreen'
 
 export function App() {
   return (
     <Routes>
       <Route path="/" element={<HomeScreen />} />
       <Route path="/settings" element={<SettingsScreen />} />
+      <Route path="/wishlist" element={<WishlistScreen />} />
       <Route path="/trip/new" element={<TripCreateScreen />} />
 
       <Route path="/trip/:id" element={<TripLayout />}>

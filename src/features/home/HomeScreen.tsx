@@ -18,12 +18,20 @@ export function HomeScreen() {
           <p className="label-caps text-text-ink/45">PASSAGE</p>
           <h1 className="font-display text-display-l mt-1">旅の棚</h1>
         </div>
-        <Link
-          to="/settings"
-          className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/60 hover:border-black/30"
-        >
-          SETTINGS
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/wishlist"
+            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/60 hover:border-black/30"
+          >
+            WISHLIST
+          </Link>
+          <Link
+            to="/settings"
+            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/60 hover:border-black/30"
+          >
+            SETTINGS
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto max-w-[900px] px-5">
