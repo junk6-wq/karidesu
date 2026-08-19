@@ -3,9 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Spot, TripContext, WindowCostEstimate } from '@/types'
 import { Button } from '@/components/common/Button'
 import { Chip } from '@/components/common/QuestChip'
-import { Photo } from '@/components/common/Photo'
 import { Thread } from '@/components/thread/Thread'
 import { CostTimingChart } from '@/components/plan/CostTimingChart'
+import { SpotDeck } from '@/components/spots/SpotDeck'
 import { aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
 import {
   COVER_PHOTOS,
@@ -15,7 +15,7 @@ import {
 } from '@/lib/providers/spotSeeds'
 import { suggestDestinations, type DestinationSuggestion } from '@/lib/destinationSuggest'
 import { suggestBestWindows } from '@/lib/seasonPricing'
-import { dateRange, formatDuration, toISODate } from '@/lib/time'
+import { dateRange, toISODate } from '@/lib/time'
 import { useTripsStore } from '@/store/tripsStore'
 import { usePreferencesStore } from '@/store/preferencesStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -76,7 +76,6 @@ export function TripCreateScreen() {
 
   const [thinking, setThinking] = useState(false)
   const [proposals, setProposals] = useState<Spot[]>([])
-  const [chosen, setChosen] = useState<Set<string>>(new Set())
 
   const dates = useMemo(
     () => (startDate && endDate && endDate >= startDate ? dateRange(startDate, endDate) : []),
@@ -120,14 +119,13 @@ export function TripCreateScreen() {
         companions,
       })
       setProposals(spots)
-      setChosen(new Set(spots.map((s) => s.id)))
     } finally {
       setThinking(false)
     }
   }
 
-  function finish() {
-    const picked = proposals.filter((s) => chosen.has(s.id))
+  /** デッキで「行く」に振り分けたスポットだけで旅をつくる。 */
+  function finish(picked: Spot[]) {
     const trip = createTrip({
       title: (title.trim() || destination).toUpperCase(),
       destination,
@@ -139,10 +137,6 @@ export function TripCreateScreen() {
     })
     navigate(`/trip/${trip.id}`, { replace: true })
   }
-
-  const estimatedStay = proposals
-    .filter((s) => chosen.has(s.id))
-    .reduce((sum, s) => sum + (s.estimatedStayMin ?? 60), 0)
 
   return (
     <div className="min-h-dvh bg-ink text-text-porcelain">
@@ -163,7 +157,7 @@ export function TripCreateScreen() {
           <Thread variant="plan" progress={(step + 1) / 4} showHead />
         </div>
 
-        <main className="anim-mode-switch mt-10 flex-1" key={step}>
+        <main className="anim-mode-switch mt-10 flex flex-1 flex-col" key={step}>
           {step === 0 && (
             <section>
               <p className="label-caps text-brass">STEP 01</p>
@@ -487,10 +481,10 @@ export function TripCreateScreen() {
           )}
 
           {step === 3 && (
-            <section>
+            <section className="flex h-full flex-col">
               <p className="label-caps text-brass">STEP 04</p>
               <h1 className="font-display text-display-l mt-2">
-                {thinking ? '旅を組み立てています' : 'この骨格でどうでしょう'}
+                {thinking ? '候補を探しています' : '行きたい方へスワイプ'}
               </h1>
 
               {thinking ? (
@@ -506,63 +500,18 @@ export function TripCreateScreen() {
                     {destination} / {dates.length} DAYS / {interests.join(' · ') || '指定なし'}
                   </p>
                 </div>
+              ) : proposals.length === 0 ? (
+                <p className="mt-6 rounded-2xl border border-white/10 p-5 text-[14px] leading-relaxed text-text-porcelain/55">
+                  この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
+                </p>
               ) : (
                 <>
-                  <p className="mt-3 text-[14px] leading-relaxed text-text-porcelain/60">
-                    外したいものはタップで外せます。順番と時間はこのあと自由に組み替えられます。
+                  <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
+                    右で「行く」、左で「見送る」。順番と時間はあとで AI が組み立てます。
                   </p>
-
-                  <div className="mt-6 space-y-2.5">
-                    {proposals.map((spot) => {
-                      const on = chosen.has(spot.id)
-                      return (
-                        <button
-                          key={spot.id}
-                          onClick={() =>
-                            setChosen((prev) => {
-                              const next = new Set(prev)
-                              if (next.has(spot.id)) next.delete(spot.id)
-                              else next.add(spot.id)
-                              return next
-                            })
-                          }
-                          className={`flex w-full items-center gap-4 rounded-2xl border p-2.5 pr-4 text-left transition duration-200 ease-passage ${
-                            on ? 'border-brass/60 bg-white/[0.07]' : 'border-white/10 opacity-45'
-                          }`}
-                        >
-                          <Photo
-                            src={spot.photoUrls[0]}
-                            alt={spot.name}
-                            className="h-16 w-20 shrink-0 rounded-xl"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[15px] font-semibold">
-                              {spot.name}
-                            </span>
-                            <span className="mono-readout mt-1 block text-[11px] text-text-porcelain/50">
-                              {spot.category} · {formatDuration(spot.estimatedStayMin ?? 60)}
-                            </span>
-                          </span>
-                          <span
-                            className={`mono-readout text-[16px] ${on ? 'text-brass' : 'text-text-porcelain/30'}`}
-                          >
-                            {on ? '✓' : '+'}
-                          </span>
-                        </button>
-                      )
-                    })}
-                    {proposals.length === 0 && (
-                      <p className="rounded-2xl border border-white/10 p-5 text-[14px] text-text-porcelain/55">
-                        この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
-                      </p>
-                    )}
+                  <div className="mt-5 flex flex-1 flex-col">
+                    <SpotDeck spots={proposals} onFinish={finish} finishLabel="この旅をつくる" />
                   </div>
-
-                  {chosen.size > 0 && (
-                    <p className="mono-readout mt-5 text-[12px] text-text-porcelain/45">
-                      {chosen.size} SPOTS · 滞在計 {formatDuration(estimatedStay)}
-                    </p>
-                  )}
                 </>
               )}
             </section>
@@ -585,9 +534,10 @@ export function TripCreateScreen() {
               AI に骨格を組んでもらう
             </Button>
           )}
-          {step === 3 && (
-            <Button variant="primary" className="w-full" disabled={thinking} onClick={finish}>
-              {thinking ? '考え中…' : 'この旅をつくる'}
+          {/* 候補が無いときだけ、空の旅程で作る導線を出す（通常はデッキ側の CTA を使う） */}
+          {step === 3 && !thinking && proposals.length === 0 && (
+            <Button variant="primary" className="w-full" onClick={() => finish([])}>
+              空の旅程でつくる
             </Button>
           )}
         </footer>

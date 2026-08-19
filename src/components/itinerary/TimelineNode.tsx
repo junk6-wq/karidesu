@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ItineraryItem, ItineraryWarning, Spot, TravelSegment } from '@/types'
@@ -31,6 +32,11 @@ const PRIORITY_STYLE: Record<string, string> = {
 
 export type NodeState = 'done' | 'next' | 'future'
 
+/** 横スワイプで日を移すと判定する距離（px）。 */
+const DAY_SWIPE = 80
+/** これ以上動いたらタップではなくスワイプ扱いにする（px）。 */
+const SWIPE_SLOP = 10
+
 /**
  * Timeline Node（7章）。訪問済み / 次 / 未来で状態が変わる。
  * ノード間は THE THREAD の点線で繋がる。
@@ -46,6 +52,9 @@ export function TimelineNode({
   onMenu,
   nextPlannedArrival,
   onRequestFreeTimeIdea,
+  onMoveDay,
+  canPrevDay = false,
+  canNextDay = false,
 }: {
   item: ItineraryItem
   spot?: Spot
@@ -59,6 +68,10 @@ export function TimelineNode({
   /** 空き時間・遅延余裕の計算に使う、次の予定の到着予定時刻。 */
   nextPlannedArrival?: string
   onRequestFreeTimeIdea?: () => void
+  /** 横スワイプで前後の日へ移す。省略時はスワイプを受け付けない。 */
+  onMoveDay?: (direction: 'prev' | 'next') => void
+  canPrevDay?: boolean
+  canNextDay?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -79,6 +92,49 @@ export function TimelineNode({
         ? 'bg-brass border-brass ring-[6px] ring-brass/20'
         : 'bg-stone border-black/25'
 
+  // 横スワイプで日を移す。縦スクロールを邪魔しないよう touch-action: pan-y にし、
+  // 一定距離動くまではタップとして扱う（動いたらその後の click は打ち消す）。
+  const swipeStartX = useRef<number | null>(null)
+  const swiped = useRef(false)
+  const [swipeDx, setSwipeDx] = useState(0)
+
+  const swipeEnabled = Boolean(onMoveDay) && (canPrevDay || canNextDay)
+  const swipeIntent: 'prev' | 'next' | null =
+    swipeDx <= -DAY_SWIPE && canNextDay ? 'next' : swipeDx >= DAY_SWIPE && canPrevDay ? 'prev' : null
+
+  function onSwipeDown(e: React.PointerEvent) {
+    if (!swipeEnabled) return
+    swipeStartX.current = e.clientX
+    swiped.current = false
+  }
+
+  function onSwipeMove(e: React.PointerEvent) {
+    if (swipeStartX.current === null) return
+    const d = e.clientX - swipeStartX.current
+    if (!swiped.current && Math.abs(d) > SWIPE_SLOP) {
+      swiped.current = true
+      e.currentTarget.setPointerCapture(e.pointerId)
+    }
+    if (!swiped.current) return
+    // 行き止まりの方向へは引っ張られている感触だけ返し、実際には動かさない
+    const blocked = (d < 0 && !canNextDay) || (d > 0 && !canPrevDay)
+    setSwipeDx(blocked ? d * 0.25 : d)
+  }
+
+  function onSwipeUp() {
+    if (swipeStartX.current === null) return
+    swipeStartX.current = null
+    const intent = swipeIntent
+    setSwipeDx(0)
+    if (intent) onMoveDay?.(intent)
+  }
+
+  function onClickCapture(e: React.MouseEvent) {
+    if (!swiped.current) return
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
   return (
     <li id={item.id} ref={setNodeRef} style={style} className="relative flex scroll-mt-28 gap-3">
       {/* THE THREAD の縦線 + ノード */}
@@ -96,30 +152,53 @@ export function TimelineNode({
         />
       </div>
 
-      <div className="min-w-0 flex-1 pb-2">
+      <div className="relative min-w-0 flex-1 pb-2">
+        {/* スワイプ中に、どちらの日へ移るのかを離す前に見せる */}
+        {swipeIntent && (
+          <span
+            className={`label-caps pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-brass px-3 py-1.5 text-[10px] text-ink ${
+              swipeIntent === 'next' ? 'right-3' : 'left-3'
+            }`}
+          >
+            {swipeIntent === 'next' ? '翌日へ →' : '← 前日へ'}
+          </span>
+        )}
         <div
+          onPointerDown={onSwipeDown}
+          onPointerMove={onSwipeMove}
+          onPointerUp={onSwipeUp}
+          onPointerCancel={onSwipeUp}
+          onClickCapture={onClickCapture}
           className={`overflow-hidden rounded-2xl border bg-white/70 transition duration-200 ease-passage ${
             focused ? 'border-brass shadow-card' : 'border-black/8'
           }`}
+          style={{
+            transform: swipeDx ? `translateX(${swipeDx}px)` : undefined,
+            transition: swipeDx ? 'none' : undefined,
+            touchAction: swipeEnabled ? 'pan-y' : undefined,
+          }}
         >
           <button onClick={onOpen} className="flex w-full items-stretch gap-3 p-2.5 text-left">
             <Photo
               src={spot?.photoUrls[0]}
               alt={spot?.name ?? '予定'}
-              className="h-[76px] w-[92px] shrink-0 rounded-xl"
+              className="h-[76px] w-[76px] shrink-0 rounded-xl sm:w-[92px]"
             />
             <span className="min-w-0 flex-1 py-0.5">
-              <span className="mono-readout flex items-center gap-2 text-[11px] text-brass">
-                {item.plannedArrival ?? '--:--'}
-                {item.plannedDeparture && (
-                  <span className="text-text-ink/35">→ {item.plannedDeparture}</span>
-                )}
-                <span className="rounded-full bg-black/[0.06] px-1.5 py-0.5 text-text-ink/50">
+              {/* 幅が狭いときは折り返す。バッジ自体は縦に潰れないよう nowrap にする */}
+              <span className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brass">
+                <span className="whitespace-nowrap">
+                  {item.plannedArrival ?? '--:--'}
+                  {item.plannedDeparture && (
+                    <span className="text-text-ink/35"> → {item.plannedDeparture}</span>
+                  )}
+                </span>
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-black/[0.06] px-1.5 py-0.5 text-text-ink/50">
                   {TYPE_LABEL[item.type]}
                 </span>
                 {spot?.priority && (
                   <span
-                    className={`label-caps rounded-full px-1.5 py-0.5 ${PRIORITY_STYLE[spot.priority]}`}
+                    className={`label-caps shrink-0 whitespace-nowrap rounded-full px-1.5 py-0.5 ${PRIORITY_STYLE[spot.priority]}`}
                   >
                     {PRIORITY_LABEL[spot.priority]}
                   </span>
@@ -149,13 +228,14 @@ export function TimelineNode({
                   ⋮
                 </span>
               )}
+              {/* ドラッグはポインタ操作向け。スマホではスワイプと「⋮」で足りるので出さない */}
               {sortable && (
                 <span
                   {...attributes}
                   {...listeners}
                   aria-label="並べ替え"
                   onClick={(e) => e.stopPropagation()}
-                  className="tap flex w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/25 active:cursor-grabbing"
+                  className="tap hidden w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/25 active:cursor-grabbing sm:flex"
                 >
                   ⠿
                 </span>
@@ -213,7 +293,7 @@ function TravelRow({
 
   return (
     <div className="py-1">
-      <div className="mono-readout flex items-center gap-2 py-1 pl-1 text-[11px] text-text-ink/45">
+      <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/45">
         <span>{MODE_LABEL[segment.mode] ?? '移動'}</span>
         <span className="text-brass">{formatDuration(segment.durationMin)}</span>
         {segment.distanceKm !== undefined && <span>{formatKm(segment.distanceKm)}</span>}
@@ -228,7 +308,7 @@ function TravelRow({
       </div>
 
       {showFreeTime && (
-        <div className="mono-readout flex items-center gap-2 py-1 pl-1 text-[11px] text-text-ink/40">
+        <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/40">
           <span>◇ 自由時間 {formatDuration(freeMin)}</span>
           {onRequestIdea && freeMin >= 60 && (
             <button

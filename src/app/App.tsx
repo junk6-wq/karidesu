@@ -7,6 +7,7 @@ import { ItineraryScreen } from '@/features/plan/ItineraryScreen'
 import { SpotsScreen } from '@/features/plan/SpotsScreen'
 import { BudgetScreen } from '@/features/plan/BudgetScreen'
 import { AgentPanelScreen } from '@/features/plan/AgentPanelScreen'
+import { SpotPickScreen } from '@/features/plan/SpotPickScreen'
 import { JourneyScreen } from '@/features/journey/JourneyScreen'
 import { JourneyRouteScreen } from '@/features/journey/JourneyRouteScreen'
 import { MemoryScreen } from '@/features/memory/MemoryScreen'
@@ -22,6 +23,8 @@ export function App() {
       <Route path="/settings" element={<SettingsScreen />} />
       <Route path="/wishlist" element={<WishlistScreen />} />
       <Route path="/trip/new" element={<TripCreateScreen />} />
+      {/* デッキは没入表示にしたいので、モードタブを持つ TripLayout の外に置く */}
+      <Route path="/trip/:id/pick" element={<SpotPickScreen />} />
 
       <Route path="/trip/:id" element={<TripLayout />}>
         <Route index element={<TripOverviewScreen />} />
