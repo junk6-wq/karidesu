@@ -304,3 +304,29 @@ export interface AppPreferences {
   planningRules: PlanningRulePreferences
   monitoring: MonitoringPreferences
 }
+
+/* --- 行きたい場所リスト（トリップに紐付かない、旅の前段階のメモ） --- */
+
+/** まだ旅程化していない「いつか行きたい場所」。Trip とは独立して保存する。 */
+export interface WishlistDestination {
+  id: string
+  name: string
+  notes?: string
+  /** INTEREST_TAGS と同じ語彙。行き先提案のマッチングに使う。 */
+  tags: string[]
+  photoUrl?: string
+  addedAt: string
+}
+
+/* --- 時期提案（コスパの良い時期の推定） --- */
+
+/** ある開始日・泊数での概算費用。実 API 接続はなく季節係数によるモック推定。 */
+export interface WindowCostEstimate {
+  startDate: string
+  endDate: string
+  nights: number
+  total: number
+  perNightAverage: number
+  seasonLabel: string
+  isCheapest: boolean
+}

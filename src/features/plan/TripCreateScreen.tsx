@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { Spot, TripContext } from '@/types'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import type { Spot, TripContext, WindowCostEstimate } from '@/types'
 import { Button } from '@/components/common/Button'
 import { Chip } from '@/components/common/QuestChip'
 import { Photo } from '@/components/common/Photo'
 import { Thread } from '@/components/thread/Thread'
+import { CostTimingChart } from '@/components/plan/CostTimingChart'
 import { aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
 import {
   COVER_PHOTOS,
@@ -12,9 +13,12 @@ import {
   FALLBACK_COVER,
   INTEREST_TAGS,
 } from '@/lib/providers/spotSeeds'
+import { suggestDestinations, type DestinationSuggestion } from '@/lib/destinationSuggest'
+import { suggestBestWindows } from '@/lib/seasonPricing'
 import { dateRange, formatDuration, toISODate } from '@/lib/time'
 import { useTripsStore } from '@/store/tripsStore'
 import { usePreferencesStore } from '@/store/preferencesStore'
+import { useWishlistStore } from '@/store/wishlistStore'
 
 type Step = 0 | 1 | 2 | 3
 
@@ -38,10 +42,12 @@ function defaultDates() {
  */
 export function TripCreateScreen() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const createTrip = useTripsStore((s) => s.createTrip)
+  const wishlist = useWishlistStore((s) => s.items)
 
   const [step, setStep] = useState<Step>(0)
-  const [destination, setDestination] = useState('')
+  const [destination, setDestination] = useState(searchParams.get('destination') ?? '')
   const [title, setTitle] = useState('')
   const dd = useMemo(defaultDates, [])
   const [startDate, setStartDate] = useState(dd.start)
@@ -54,6 +60,20 @@ export function TripCreateScreen() {
   const [pace, setPace] = useState<TripContext['pace']>(travelStyle.pace)
   const [companions, setCompanions] = useState(travelStyle.defaultPartySize)
 
+  // 行き先未定でも進められるよう、興味・行きたい場所リストから候補を出す
+  const [destSuggestions, setDestSuggestions] = useState<DestinationSuggestion[] | null>(null)
+
+  // 休暇期間の中からコスパの良い時期を提案する
+  const [dateMode, setDateMode] = useState<'fixed' | 'flexible'>('fixed')
+  const [earliestStart, setEarliestStart] = useState(dd.start)
+  const [latestEnd, setLatestEnd] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 60)
+    return toISODate(d)
+  })
+  const [flexNights, setFlexNights] = useState(2)
+  const [estimates, setEstimates] = useState<WindowCostEstimate[] | null>(null)
+
   const [thinking, setThinking] = useState(false)
   const [proposals, setProposals] = useState<Spot[]>([])
   const [chosen, setChosen] = useState<Set<string>>(new Set())
@@ -65,6 +85,27 @@ export function TripCreateScreen() {
 
   const canGoNext =
     step === 0 ? destination.trim().length > 0 : step === 1 ? dates.length > 0 : true
+
+  function proposeDestinations() {
+    setDestSuggestions(suggestDestinations(interests, wishlist))
+  }
+
+  function compareWindows() {
+    if (!destination.trim() || !earliestStart || !latestEnd) return
+    const result = suggestBestWindows({
+      destination,
+      earliestStart,
+      latestEnd,
+      nights: flexNights,
+      partySize: companions,
+    })
+    setEstimates(result)
+  }
+
+  function pickWindow(e: WindowCostEstimate) {
+    setStartDate(e.startDate)
+    setEndDate(e.endDate)
+  }
 
   async function askAgent() {
     setThinking(true)
@@ -151,6 +192,64 @@ export function TripCreateScreen() {
                 ))}
               </div>
 
+              {wishlist.length > 0 && (
+                <div className="mt-6">
+                  <p className="label-caps text-text-porcelain/50">行きたい場所リストから</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {wishlist.map((w) => (
+                      <Chip
+                        key={w.id}
+                        tone="dark"
+                        active={destination === w.name}
+                        onClick={() => setDestination(w.name)}
+                      >
+                        {w.name}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6">
+                <button
+                  onClick={proposeDestinations}
+                  className="tap label-caps rounded-full border border-white/20 px-4 text-text-porcelain/70 hover:border-brass hover:text-brass"
+                >
+                  まだ決めていない → 行き先を提案してもらう
+                </button>
+
+                {destSuggestions && (
+                  <div className="anim-rise mt-4 space-y-2">
+                    {destSuggestions.length === 0 && (
+                      <p className="text-[13px] text-text-porcelain/50">
+                        設定画面で興味を選んでおくと、提案の精度が上がります。
+                      </p>
+                    )}
+                    {destSuggestions.map((s) => (
+                      <button
+                        key={s.name}
+                        onClick={() => setDestination(s.name)}
+                        className={`flex w-full items-center justify-between gap-3 rounded-2xl border p-3.5 text-left transition duration-200 ease-passage ${
+                          destination === s.name
+                            ? 'border-brass bg-brass/10'
+                            : 'border-white/15 hover:border-white/35'
+                        }`}
+                      >
+                        <span>
+                          <span className="block text-[15px] font-semibold">{s.name}</span>
+                          <span className="mt-0.5 block text-[12px] text-text-porcelain/50">{s.reason}</span>
+                        </span>
+                        {s.source === 'wishlist' && (
+                          <span className="label-caps shrink-0 rounded-full bg-white/10 px-2 py-1 text-[9px] text-text-porcelain/60">
+                            WISHLIST
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <label className="mt-9 block">
                 <span className="label-caps text-text-porcelain/50">旅の名前（任意）</span>
                 <input
@@ -168,30 +267,150 @@ export function TripCreateScreen() {
               <p className="label-caps text-brass">STEP 02</p>
               <h1 className="font-display text-display-l mt-2">いつ、何日間？</h1>
 
-              <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="label-caps text-text-porcelain/50">出発</span>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value)
-                      if (endDate < e.target.value) setEndDate(e.target.value)
-                    }}
-                    className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
-                  />
-                </label>
-                <label className="block">
-                  <span className="label-caps text-text-porcelain/50">帰着</span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    min={startDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
-                  />
-                </label>
+              <div className="mt-6 flex gap-2">
+                <button
+                  onClick={() => setDateMode('fixed')}
+                  className={`tap label-caps rounded-full border px-4 text-[11px] ${
+                    dateMode === 'fixed'
+                      ? 'border-brass bg-brass/15 text-brass'
+                      : 'border-white/20 text-text-porcelain/60 hover:border-white/40'
+                  }`}
+                >
+                  日付を決めて入れる
+                </button>
+                <button
+                  onClick={() => setDateMode('flexible')}
+                  className={`tap label-caps rounded-full border px-4 text-[11px] ${
+                    dateMode === 'flexible'
+                      ? 'border-brass bg-brass/15 text-brass'
+                      : 'border-white/20 text-text-porcelain/60 hover:border-white/40'
+                  }`}
+                >
+                  期間の中で時期を選ぶ
+                </button>
               </div>
+
+              {dateMode === 'fixed' && (
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="label-caps text-text-porcelain/50">出発</span>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value)
+                        if (endDate < e.target.value) setEndDate(e.target.value)
+                      }}
+                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="label-caps text-text-porcelain/50">帰着</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                    />
+                  </label>
+                </div>
+              )}
+
+              {dateMode === 'flexible' && (
+                <div className="mt-6">
+                  <p className="text-[13px] leading-relaxed text-text-porcelain/55">
+                    休める期間の範囲を入れると、その中で泊数分の旅をどこから始めると得か、費用の目安を比べます。
+                  </p>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="label-caps text-text-porcelain/50">休暇の開始（最短）</span>
+                      <input
+                        type="date"
+                        value={earliestStart}
+                        onChange={(e) => {
+                          setEarliestStart(e.target.value)
+                          setEstimates(null)
+                        }}
+                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="label-caps text-text-porcelain/50">休暇の終了（最長）</span>
+                      <input
+                        type="date"
+                        value={latestEnd}
+                        min={earliestStart}
+                        onChange={(e) => {
+                          setLatestEnd(e.target.value)
+                          setEstimates(null)
+                        }}
+                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="mt-6 block">
+                    <span className="label-caps text-text-porcelain/50">何泊する？</span>
+                    <div className="mt-2 flex items-center gap-3">
+                      <Button
+                        tone="dark"
+                        onClick={() => {
+                          setFlexNights(Math.max(1, flexNights - 1))
+                          setEstimates(null)
+                        }}
+                        aria-label="泊数を減らす"
+                      >
+                        −
+                      </Button>
+                      <span className="mono-readout w-14 text-center text-[20px]">
+                        {flexNights} 泊
+                      </span>
+                      <Button
+                        tone="dark"
+                        onClick={() => {
+                          setFlexNights(flexNights + 1)
+                          setEstimates(null)
+                        }}
+                        aria-label="泊数を増やす"
+                      >
+                        ＋
+                      </Button>
+                    </div>
+                  </label>
+
+                  <Button
+                    variant="primary"
+                    className="mt-5"
+                    disabled={!destination.trim() || !earliestStart || !latestEnd}
+                    onClick={compareWindows}
+                  >
+                    時期を比較する
+                  </Button>
+                  {!destination.trim() && (
+                    <p className="mt-2 text-[12px] text-text-porcelain/40">
+                      先に STEP 01 で行き先を入れてください（未定候補でも構いません）。
+                    </p>
+                  )}
+
+                  {estimates && estimates.length > 0 && (
+                    <div className="anim-rise mt-6 rounded-2xl border border-white/15 bg-white/5 p-4">
+                      <CostTimingChart
+                        estimates={estimates}
+                        currency="JPY"
+                        selectedStart={startDate}
+                        onSelect={pickWindow}
+                        tone="dark"
+                      />
+                    </div>
+                  )}
+                  {estimates && estimates.length === 0 && (
+                    <p className="mt-4 text-[13px] text-text-porcelain/50">
+                      この期間と泊数の組み合わせでは候補が作れませんでした。期間を広げてみてください。
+                    </p>
+                  )}
+                </div>
+              )}
 
               <p className="mono-readout mt-6 text-[13px] text-brass">
                 {dates.length > 0 ? `${dates.length} DAYS` : '日付を確認してください'}
