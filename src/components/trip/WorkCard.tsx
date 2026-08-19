@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import type { Trip } from '@/types'
 import { Photo } from '@/components/common/Photo'
 import { Thread } from '@/components/thread/Thread'
-import { formatCurrency, formatKm } from '@/lib/format'
 import { formatDateRange, daysUntil } from '@/lib/time'
 import { tripStats } from '@/lib/tripStats'
 import { deriveStatus } from '@/store/tripsStore'
@@ -11,12 +10,12 @@ const STATUS_LABEL: Record<string, string> = {
   planning: 'PLANNING',
   upcoming: 'UPCOMING',
   journey: 'ON THE JOURNEY',
-  completed: 'COMPLETED',
+  completed: 'MEMORY READY',
 }
 
 /**
  * Work Card（S01）— 旅程表ではなく「棚に並んだ作品の表紙」。
- * 大判写真 + mono 統計 + THE THREAD の断片で構成する。
+ * 情報を詰め込みすぎず、行き先・日程・写真・進行状態にしぼる（29章 10.）。
  */
 export function WorkCard({ trip, index = 0 }: { trip: Trip; index?: number }) {
   const status = deriveStatus(trip)
@@ -80,16 +79,8 @@ export function WorkCard({ trip, index = 0 }: { trip: Trip; index?: number }) {
             />
           </div>
 
-          <div className="mono-readout flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[12px] text-text-porcelain/85">
+          <div className="mono-readout text-[12px] text-text-porcelain/85">
             <span>{stats.dayCount} DAYS</span>
-            <span>{formatKm(stats.distanceKm)}</span>
-            <span>{stats.itemCount} SPOTS</span>
-            <span className="text-brass">
-              {formatCurrency(
-                stats.actualTotal > 0 ? stats.actualTotal : stats.plannedTotal,
-                trip.budget.currency,
-              )}
-            </span>
           </div>
         </div>
       </Photo>

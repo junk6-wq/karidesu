@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom'
-import { sortTripsForShelf, useTripsStore } from '@/store/tripsStore'
+import { deriveStatus, sortTripsForShelf, useTripsStore } from '@/store/tripsStore'
 import { WorkCard } from '@/components/trip/WorkCard'
+import { HeroTripCard } from '@/components/trip/HeroTripCard'
 import { Thread } from '@/components/thread/Thread'
 
 /**
  * S01 — Home（旅の棚）
- * 単なるリストではなく、棚に並んだ作品として旅を見せる。
+ * 単なる一覧ではなく、開いた瞬間に「次の旅」が主役として目に入る画面にする（29章 9.）。
  */
 export function HomeScreen() {
   const trips = useTripsStore((s) => s.trips)
   const shelf = sortTripsForShelf(trips)
+  const hero = shelf[0] && deriveStatus(shelf[0]) !== 'completed' ? shelf[0] : undefined
+  const rest = hero ? shelf.slice(1) : shelf
 
   return (
     <div className="min-h-dvh bg-stone pb-[120px]">
@@ -35,12 +38,19 @@ export function HomeScreen() {
       </header>
 
       <main className="mx-auto max-w-[900px] px-5">
-        {shelf.length === 0 ? <EmptyShelf /> : (
-          <div className="grid gap-5">
-            {shelf.map((trip, i) => (
-              <WorkCard key={trip.id} trip={trip} index={i} />
-            ))}
-          </div>
+        {shelf.length === 0 ? (
+          <EmptyShelf />
+        ) : (
+          <>
+            {hero && <HeroTripCard trip={hero} />}
+            {rest.length > 0 && (
+              <div className={`grid gap-5 ${hero ? 'mt-7' : ''}`}>
+                {rest.map((trip, i) => (
+                  <WorkCard key={trip.id} trip={trip} index={i} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
 

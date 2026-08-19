@@ -20,6 +20,8 @@ export interface JourneyContext {
   doneCount: number
   /** 次の目的地までの推定移動時間（分, 現在地不明なら undefined） */
   etaMin?: number
+  /** 次の目的地までの推定距離（km, 現在地不明なら undefined） */
+  distanceKm?: number
   /** 出発すべき時刻までの残り（分）。負なら出発すべき時刻を過ぎている */
   leaveInMin?: number
 }
@@ -146,9 +148,10 @@ export function buildContext(
   const plannedArrivalMin = toMinutes(nextItem?.plannedArrival)
 
   let etaMin: number | undefined
+  let distanceKm: number | undefined
   if (state.currentLocation && nextSpot) {
-    const km = haversineKm(state.currentLocation, nextSpot.location)
-    etaMin = estimateDurationMin(km, 'car')
+    distanceKm = haversineKm(state.currentLocation, nextSpot.location)
+    etaMin = estimateDurationMin(distanceKm, 'car')
   }
 
   let delayMinutes = manualDelay
@@ -178,6 +181,7 @@ export function buildContext(
     todayItems,
     doneCount,
     etaMin,
+    distanceKm,
     leaveInMin: leaveInMin === undefined ? undefined : Math.round(leaveInMin),
   }
 }

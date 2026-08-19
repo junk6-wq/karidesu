@@ -18,6 +18,7 @@ import type { ItineraryItem } from '@/types'
 import { useTrip, useTripWarnings, useTripsStore } from '@/store/tripsStore'
 import { TimelineNode, type NodeState } from '@/components/itinerary/TimelineNode'
 import { ItemQuickMenu } from '@/components/itinerary/ItemQuickMenu'
+import { TripCheck } from '@/components/agent/TripCheck'
 import { MapLayer } from '@/components/map/MapLayer'
 import { Button } from '@/components/common/Button'
 import { SpotDetailSheet } from './SpotDetailSheet'
@@ -149,6 +150,20 @@ export function ItineraryScreen() {
         </Button>
       </div>
 
+      {/* 画面を開いて最初に目に入る位置に、旅程全体の状態をひと目で置く（29章 3. 視線誘導） */}
+      <div className="mt-4">
+        <TripCheck
+          warnings={warnings}
+          compact
+          onSelectWarning={(itemId) => {
+            setFocusId(itemId)
+            window.setTimeout(() => {
+              document.getElementById(itemId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 60)
+          }}
+        />
+      </div>
+
       {/* モバイルはタブ切替、デスクトップは 2 カラム */}
       <div className="mt-5 flex gap-1 rounded-full border border-black/10 p-1 lg:hidden">
         {(['timeline', 'map'] as const).map((tab) => (
@@ -176,6 +191,11 @@ export function ItineraryScreen() {
                 <span className="mono-readout text-[11px] text-text-ink/40">
                   {formatDateDot(day.date)} {weekdayEn(day.date)}
                 </span>
+                {day.date === todayISO && (
+                  <span className="label-caps rounded-full bg-brass px-2 py-0.5 text-[9px] text-ink">
+                    TODAY
+                  </span>
+                )}
               </div>
 
               <DndContext

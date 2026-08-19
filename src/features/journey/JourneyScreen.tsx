@@ -150,15 +150,17 @@ export function JourneyScreen() {
           </div>
         </div>
 
-        {/* NEXT: 主役だが画面を占有しすぎないコンパクトなカード */}
-        <div className="px-5 pb-6 pt-8">
+        {/* NEXT: 画面の主役。1〜2秒で「次はどこ・何時・間に合うか」が分かる大きさにする */}
+        <div className="px-5 pb-6 pt-6">
           <NextCard
             spot={ctx.nextSpot}
             plannedArrival={ctx.nextItem?.plannedArrival}
             etaMin={ctx.etaMin}
+            distanceKm={ctx.distanceKm}
             leaveInMin={ctx.leaveInMin}
             status={status}
-            compact
+            delayMinutes={delay}
+            onAdjust={openReplan}
           />
         </div>
 
