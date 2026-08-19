@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /** 文字列から安定した色相を作り、写真が無い/読めないときの下地にする。 */
 function hueOf(seed: string): number {
@@ -27,6 +27,8 @@ export function Photo({
   children?: React.ReactNode
 }) {
   const [failed, setFailed] = useState(false)
+  // src が切り替わったら（写真カルーセルでの切り替えなど）、前の画像の失敗状態を引きずらない
+  useEffect(() => setFailed(false), [src])
   const hue = hueOf(seed)
   const showImage = Boolean(src) && !failed
 
