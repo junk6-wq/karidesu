@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import type { Spot } from '@/types'
 import { useTrip, useTripsStore } from '@/store/tripsStore'
-import { SpotDeck } from '@/components/spots/SpotDeck'
+import { SpotGrid } from '@/components/spots/SpotGrid'
 import { Thread } from '@/components/thread/Thread'
 import { aiAgent } from '@/lib/providers/mockAgent'
 import { usePreferencesStore } from '@/store/preferencesStore'
 
 /**
- * 既存の旅にスポットを足すときのデッキ画面。
- * 一覧から選ばせるのではなく、Trip 作成時と同じ「1枚ずつ見てタップで決める」に揃える。
+ * 既存の旅にスポットを足すときの選択画面。Trip 作成時と同じ SpotGrid を使う。
  * 選び終わったら予定の少ない日へ自動で振り分け、続けて AI が時間と移動を整える。
  */
 export function SpotPickScreen() {
@@ -74,9 +73,9 @@ export function SpotPickScreen() {
         </div>
 
         <main className="mt-8 flex flex-1 flex-col">
-          <h1 className="font-display text-display-l">1つずつ、行くか決める</h1>
+          <h1 className="font-display text-display-l">行きたい場所を選ぶ</h1>
           <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-            ♥ で「行く」、✕ で「見送る」。選んだ場所は空いている日に入れて、時間は AI が整えます。
+            タップして選ぶ。選んだ場所は空いている日に入れて、時間は AI が整えます。
           </p>
 
           {loading ? (
@@ -87,7 +86,7 @@ export function SpotPickScreen() {
             </p>
           ) : (
             <div className="mt-6 flex flex-1 flex-col">
-              <SpotDeck
+              <SpotGrid
                 spots={candidates}
                 onFinish={adopt}
                 finishLabel="旅程に入れる"
