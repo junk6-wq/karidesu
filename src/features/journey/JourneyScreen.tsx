@@ -113,9 +113,7 @@ export function JourneyScreen() {
         <div className="absolute inset-0 bg-gradient-to-b from-ink/92 via-ink/90 to-ink" />
       </Photo>
 
-      <div
-        className={`relative flex min-h-dvh flex-col ${dayComplete ? 'pb-8' : 'pb-[calc(84px+env(safe-area-inset-bottom))]'}`}
-      >
+      <div className="relative flex min-h-dvh flex-col pb-[calc(84px+env(safe-area-inset-bottom))]">
         {/* ヘッダー: スクロールしても常に見える */}
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/8 bg-ink/70 px-5 py-3 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-md">
           <Link
@@ -188,25 +186,27 @@ export function JourneyScreen() {
         </div>
       </div>
 
-      {/* 操作バー: 親指の届く画面下部に固定 */}
-      {!dayComplete && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-ink/85 px-5 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md">
-          <div className="mx-auto flex max-w-[520px] items-center justify-center gap-2.5">
-            <Button variant="primary" onClick={markArrived}>
-              着いた
-            </Button>
-            <Button tone="dark" onClick={() => reportDelay(id!, 15)}>
-              遅れそう
-            </Button>
-            <Link
-              to={`/trip/${trip.id}/journey/route`}
-              className="tap inline-flex items-center justify-center rounded-full border border-white/25 px-5 text-[14px] font-semibold text-text-porcelain/90 hover:bg-white/10"
-            >
-              ルート
-            </Link>
-          </div>
+      {/* 操作バー: 親指の届く画面下部に固定。今日を終えても「全日程」だけは残す */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-ink/85 px-5 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[520px] items-center justify-center gap-2.5">
+          {!dayComplete && (
+            <>
+              <Button variant="primary" onClick={markArrived}>
+                着いた
+              </Button>
+              <Button tone="dark" onClick={() => reportDelay(id!, 15)}>
+                遅れそう
+              </Button>
+            </>
+          )}
+          <Link
+            to={`/trip/${trip.id}/journey/route`}
+            className="tap inline-flex items-center justify-center rounded-full border border-white/25 px-5 text-[14px] font-semibold text-text-porcelain/90 hover:bg-white/10"
+          >
+            全日程
+          </Link>
         </div>
-      )}
+      </div>
 
       <ReplanSheet
         open={replanOpen}

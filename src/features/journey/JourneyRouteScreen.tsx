@@ -6,13 +6,14 @@ import { MapLayer } from '@/components/map/MapLayer'
 import { StatReadout } from '@/components/common/StatReadout'
 import { Thread } from '@/components/thread/Thread'
 import { TodayTimeline } from '@/components/journey/TodayTimeline'
-import { formatDuration, toISODate } from '@/lib/time'
+import { formatDateDot, formatDuration, toISODate, weekdayEn } from '@/lib/time'
 import { formatKm } from '@/lib/format'
 import { haversineKm } from '@/lib/geo'
 
 /**
- * S09 — Journey / Full Route
- * 全体地図・現在地・遅延状況。Next 画面で畳んだ情報をここだけで開く。
+ * S09 — Journey / 全日程
+ * Next 画面が「今と次」に集中する分、こちらで旅の全工程を通して見られるようにする。
+ * 地図は全日分の経路、下は DAY ごとのタイムライン。今日の DAY は強調する。
  */
 export function JourneyRouteScreen() {
   const { id } = useParams()
@@ -34,30 +35,40 @@ export function JourneyRouteScreen() {
   if (!trip || !id || !ctx) return <Navigate to="/" replace />
 
   const todayISO = toISODate(new Date())
-  const day = trip.itinerary.find((d) => d.date === todayISO) ?? trip.itinerary[0]
+  const spotById = new Map(trip.spots.map((s) => [s.id, s]))
 
-  const markers = (day?.items ?? []).flatMap((item) => {
-    const spot = trip.spots.find((s) => s.id === item.spotId)
-    if (!spot) return []
-    return [
-      {
-        id: item.id,
-        position: spot.location,
-        label: spot.name,
-        state: item.actualArrival
-          ? ('done' as const)
-          : item.id === ctx.nextItem?.id
-            ? ('next' as const)
-            : ('future' as const),
-      },
-    ]
-  })
+  // 地図は旅の全行程。今日以降の予定は future、到着済みは done で塗り分ける
+  const markers = trip.itinerary.flatMap((day) =>
+    day.items.flatMap((item) => {
+      const spot = spotById.get(item.spotId)
+      if (!spot) return []
+      return [
+        {
+          id: item.id,
+          position: spot.location,
+          label: spot.name,
+          state: item.actualArrival
+            ? ('done' as const)
+            : item.id === ctx.nextItem?.id
+              ? ('next' as const)
+              : ('future' as const),
+        },
+      ]
+    }),
+  )
 
-  const remainingKm = markers
-    .slice(markers.findIndex((m) => m.state === 'next'))
-    .reduce((sum, m, i, arr) => (i === 0 ? sum : sum + haversineKm(arr[i - 1].position, m.position)), 0)
+  const allItems = trip.itinerary.flatMap((d) => d.items)
+  const doneAll = allItems.filter((i) => i.actualArrival).length
+  const tripProgressRatio = allItems.length ? doneAll / allItems.length : 0
 
-  const progress = ctx.todayItems.length ? ctx.doneCount / ctx.todayItems.length : 1
+  // 残り距離は「次の予定から最後まで」を旅程順に足す
+  const nextIndex = markers.findIndex((m) => m.state === 'next')
+  const remainingKm =
+    nextIndex < 0
+      ? 0
+      : markers
+          .slice(nextIndex)
+          .reduce((sum, m, i, arr) => (i === 0 ? sum : sum + haversineKm(arr[i - 1].position, m.position)), 0)
 
   return (
     <div className="min-h-dvh bg-ink text-text-porcelain">
@@ -68,25 +79,25 @@ export function JourneyRouteScreen() {
         >
           ← NEXT
         </Link>
-        <span className="label-caps text-text-porcelain/45">FULL ROUTE</span>
+        <span className="label-caps text-text-porcelain/45">全日程</span>
       </header>
 
       <div className="mt-5 overflow-hidden">
         <MapLayer
           markers={markers}
-          progress={progress}
+          progress={tripProgressRatio}
           current={ctx.state.currentLocation}
-          className="h-[52dvh] w-full"
+          className="h-[42dvh] w-full"
         />
       </div>
 
       <div className="px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-6">
         <div className="text-text-porcelain">
-          <Thread variant="journey" progress={progress} status={ctx.state.status} showHead />
+          <Thread variant="journey" progress={tripProgressRatio} status={ctx.state.status} showHead />
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-4">
-          <StatReadout label="DONE" value={`${ctx.doneCount}/${ctx.todayItems.length}`} tone="dark" />
+          <StatReadout label="DONE" value={`${doneAll}/${allItems.length}`} tone="dark" />
           <StatReadout label="REMAINING" value={formatKm(remainingKm)} tone="dark" />
           <StatReadout
             label="DELAY"
@@ -105,12 +116,59 @@ export function JourneyRouteScreen() {
           />
         </div>
 
-        <TodayTimeline
-          items={day?.items ?? []}
-          spots={trip.spots}
-          nextItemId={ctx.nextItem?.id}
-          className="mt-8"
-        />
+        {/* 旅の全工程。今日だけでなく前後の日も通して見られるようにする */}
+        <div className="mt-8 space-y-6">
+          {trip.itinerary.map((day, dayIndex) => {
+            const isToday = day.date === todayISO
+            const isPast = day.date < todayISO
+            const dayDone = day.items.filter((i) => i.actualArrival).length
+            return (
+              <section
+                key={day.id}
+                className={`rounded-card border p-4 ${
+                  isToday ? 'border-brass/45 bg-brass/[0.07]' : 'border-white/10 bg-white/[0.03]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <h2 className="mono-readout text-[13px] text-brass">
+                    DAY {String(dayIndex + 1).padStart(2, '0')}
+                  </h2>
+                  <span className="mono-readout text-[11px] text-text-porcelain/45">
+                    {formatDateDot(day.date)} {weekdayEn(day.date)}
+                  </span>
+                  {isToday && (
+                    <span className="label-caps rounded-full bg-brass px-2 py-0.5 text-[9px] text-ink">
+                      TODAY
+                    </span>
+                  )}
+                  {day.items.length > 0 && (
+                    <span
+                      className={`mono-readout ml-auto text-[11px] ${
+                        isPast || dayDone === day.items.length
+                          ? 'text-text-porcelain/35'
+                          : 'text-text-porcelain/55'
+                      }`}
+                    >
+                      {dayDone}/{day.items.length}
+                    </span>
+                  )}
+                </div>
+
+                {day.items.length > 0 ? (
+                  <TodayTimeline
+                    items={day.items}
+                    spots={trip.spots}
+                    nextItemId={ctx.nextItem?.id}
+                    className={`mt-3 ${isPast ? 'opacity-55' : ''}`}
+                    dense
+                  />
+                ) : (
+                  <p className="mt-2 text-[12px] text-text-porcelain/35">予定はありません。</p>
+                )}
+              </section>
+            )
+          })}
+        </div>
 
         {!ctx.state.currentLocation && (
           <p className="mono-readout mt-8 text-[11px] leading-relaxed text-text-porcelain/35">

@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { useTrip, useTripWarnings } from '@/store/tripsStore'
+import { useTrip, useTripWarnings, useTripsStore } from '@/store/tripsStore'
+import { ProposalCard } from '@/components/agent/ProposalCard'
+import { aiAgent } from '@/lib/providers/mockAgent'
+import type { AIProposal } from '@/types'
 import { Photo } from '@/components/common/Photo'
 import { Thread } from '@/components/thread/Thread'
 import { StatReadout } from '@/components/common/StatReadout'
@@ -30,6 +33,70 @@ const LOAD_COLOR: Record<DayLoad['level'], string> = {
 
 const LOAD_DOT: Record<DayLoad['level'], string> = { low: '🟢', medium: '🟠', high: '🔴' }
 
+/**
+ * 見つかった問題から、AI に投げる修正リクエストを自動で組み立てる。
+ * ユーザーが AI パネルで文章を打たなくても、開いた時点で直す案が用意されている
+ * ようにするための入口。文言は aiProposals のルールが拾える言い回しに合わせる。
+ */
+interface FixCandidate {
+  title: string
+  request: string
+}
+
+/**
+ * 見つかった問題から、AI に投げる修正リクエストの候補を優先順に組み立てる。
+ * ルールによっては（例: 移動距離の短縮は 3 件以上ある日にしか効かない）
+ * 実際の変更を作れないことがあるので、1 つに絞らず順に試せるよう配列で返す。
+ */
+function autoFixCandidates(
+  trip: Trip,
+  dayLoads: DayLoad[],
+  warnings: ItineraryWarning[],
+): FixCandidate[] {
+  const out: FixCandidate[] = []
+  const seen = new Set<string>()
+  const push = (c: FixCandidate) => {
+    if (seen.has(c.request)) return
+    seen.add(c.request)
+    out.push(c)
+  }
+  const slowDown = (dayIndex: number, reason: string) =>
+    push({
+      title: `DAY${dayIndex + 1} ${reason}`,
+      request: `DAY${dayIndex + 1}をもう少しゆっくりにして`,
+    })
+  const dayIndexOfItem = (itemId: string) =>
+    trip.itinerary.findIndex((d) => d.items.some((i) => i.id === itemId))
+
+  // 1) 明らかに詰まっている日
+  const worst = [...dayLoads].sort((a, b) => b.score - a.score)[0]
+  if (worst && worst.level !== 'low') {
+    const dayIndex = trip.itinerary.findIndex((d) => d.id === worst.dayId)
+    if (dayIndex >= 0) {
+      slowDown(dayIndex, worst.level === 'high' ? 'が詰まっています' : 'が少し詰まっています')
+    }
+  }
+
+  // 2) 個別の警告。重いものから順に、AI が手を入れられる種類だけ拾う
+  const bySeverity = [...warnings].sort((a, b) => {
+    const rank = { risk: 0, warn: 1, info: 2 } as const
+    return rank[a.severity] - rank[b.severity]
+  })
+  for (const w of bySeverity) {
+    if (w.category === 'travel_time') {
+      push({ title: '移動に無理があります', request: '移動距離を減らして' })
+      // 移動距離の短縮が効かない旅程でも、その日を薄くすれば余裕は作れる
+      const dayIndex = dayIndexOfItem(w.itemId)
+      if (dayIndex >= 0) slowDown(dayIndex, 'の移動が窮屈です')
+    }
+    if (w.category === 'rest_margin' || w.category === 'density') {
+      const dayIndex = dayIndexOfItem(w.itemId)
+      if (dayIndex >= 0) slowDown(dayIndex, 'に余裕がありません')
+    }
+  }
+  return out
+}
+
 function nextActionText(trip: Trip, dayLoads: DayLoad[], warnings: ItineraryWarning[]): string {
   const emptyDayIndex = trip.itinerary.findIndex((d) => d.items.length === 0)
   if (emptyDayIndex !== -1) {
@@ -55,7 +122,53 @@ export function TripOverviewScreen() {
   const { id } = useParams()
   const trip = useTrip(id)
   const warnings = useTripWarnings(id)
+  const { runOptimize, applyProposal } = useTripsStore()
   const [showBreakdown, setShowBreakdown] = useState(false)
+  const [autoFix, setAutoFix] = useState<{ proposal: AIProposal; title: string } | null>(null)
+  const [autoBusy, setAutoBusy] = useState(false)
+
+  const dayLoads = useMemo(() => (trip ? evaluateDayLoadSync(trip) : []), [trip])
+
+  // 開いた時点で AI が検証を済ませておく。これまでは旅程画面を開くまで
+  // 走らず、作ったばかりの旅では TRIP HEALTH が未検証の値のままだった。
+  useEffect(() => {
+    if (id) void runOptimize(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  // 見つかった問題に対する直し方も、聞かれる前に用意しておく。
+  // 候補を順に試し、実際に旅程を変えられる案が出た時点で止める。
+  const candidates = trip ? autoFixCandidates(trip, dayLoads, warnings) : []
+  const candidatesKey = candidates.map((c) => c.request).join('|')
+  useEffect(() => {
+    if (!trip || candidates.length === 0) {
+      setAutoFix(null)
+      return
+    }
+    let alive = true
+    setAutoBusy(true)
+    void (async () => {
+      for (const c of candidates) {
+        const list = await aiAgent.proposeItineraryChanges(trip, c.request)
+        if (!alive) return
+        const usable = list.find((p) => p.changes.length > 0)
+        if (usable) {
+          setAutoFix({ proposal: usable, title: c.title })
+          setAutoBusy(false)
+          return
+        }
+      }
+      if (alive) {
+        setAutoFix(null)
+        setAutoBusy(false)
+      }
+    })()
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trip?.id, candidatesKey])
+
   if (!trip) return <Navigate to="/" replace />
 
   const stats = tripStats(trip)
@@ -63,10 +176,16 @@ export function TripOverviewScreen() {
   const modes = modesFor(trip)
   const journey = modes.find((m) => m.id === 'journey')
 
-  const dayLoads = evaluateDayLoadSync(trip)
   const health = evaluateTripHealthSync(trip, warnings)
   const completeness = planCompleteness(trip, warnings)
   const nextAction = nextActionText(trip, dayLoads, warnings)
+
+  function acceptAutoFix() {
+    if (!autoFix || !id) return
+    applyProposal(id, autoFix.proposal)
+    setAutoFix(null)
+    void runOptimize(id)
+  }
 
   return (
     <div className="pb-24">
@@ -172,6 +291,27 @@ export function TripOverviewScreen() {
             {showBreakdown ? '内訳を閉じる' : '内訳を見る'}
           </button>
         </div>
+
+        {/* 聞かれる前に用意しておいた直し方。1タップで適用できる */}
+        {autoBusy && !autoFix && (
+          <p className="mono-readout mt-4 text-[12px] text-text-ink/40">
+            AI が直し方を探しています…
+          </p>
+        )}
+        {autoFix && (
+          <div className="mt-4">
+            <p className="label-caps mb-2 text-text-ink/45">AI が見つけた改善 · {autoFix.title}</p>
+            <ProposalCard
+              proposal={autoFix.proposal}
+              spots={trip.spots}
+              currentItinerary={trip.itinerary}
+              onApply={acceptAutoFix}
+              onNext={() => setAutoFix(null)}
+              onDismiss={() => setAutoFix(null)}
+              hasNext={false}
+            />
+          </div>
+        )}
 
         {/* 旅の骨格 */}
         <section className="mt-11 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">

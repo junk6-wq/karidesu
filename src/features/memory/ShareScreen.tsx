@@ -5,13 +5,17 @@ import { Button } from '@/components/common/Button'
 import { StatReadout } from '@/components/common/StatReadout'
 import { Thread } from '@/components/thread/Thread'
 import { formatCurrency, formatKm } from '@/lib/format'
-import { formatDateRange } from '@/lib/time'
+import { formatDateDot, formatDateRange, weekdayEn } from '@/lib/time'
 import { effectiveSpend, tripStats } from '@/lib/tripStats'
+import { buildShareText } from '@/lib/shareText'
 
 /**
  * S13 — Share / Export
  * 共有はテキスト or Web Share API、PDF はブラウザの印刷ダイアログ経由。
  * 旅そのもののデータは JSON で持ち出せる（将来のクラウド同期までの避難路）。
+ *
+ * 旅の前でも渡せるよう、モードタブの外（/trip/:id/share）に置いた単独画面。
+ * 印刷して渡すことも想定して、紙に近い明るい面で組む。
  */
 export function ShareScreen() {
   const { id } = useParams()
@@ -22,15 +26,8 @@ export function ShareScreen() {
 
   const stats = tripStats(trip)
   const spend = effectiveSpend(trip)
-
-  const shareText = [
-    `${trip.title} — ${formatDateRange(trip.startDate, trip.endDate)}`,
-    '',
-    trip.memory?.narrative ?? `${trip.destination}を${stats.dayCount}日間。`,
-    '',
-    `${stats.itemCount} spots / ${formatKm(stats.distanceKm)} / ${formatCurrency(spend, trip.budget.currency)}`,
-    '— PASSAGE',
-  ].join('\n')
+  const spotById = new Map(trip.spots.map((s) => [s.id, s]))
+  const shareText = buildShareText(trip)
 
   function flash(message: string) {
     setNote(message)
@@ -69,22 +66,29 @@ export function ShareScreen() {
     URL.revokeObjectURL(url)
   }
 
+  const subText = 'text-text-ink/55'
+  const bodyText = 'text-text-ink/70'
+
   return (
-    <div className="mx-auto max-w-[720px] px-6 pb-28 pt-8">
-      <Link
-        to={`/trip/${trip.id}/memory`}
-        className="tap label-caps no-print -ml-2 inline-flex items-center rounded-full px-2 text-text-porcelain/55"
-      >
-        ← TRAVELOGUE
-      </Link>
+    <div className="min-h-dvh bg-stone text-text-ink">
+      <div className="mx-auto max-w-[720px] px-6 pb-28 pt-[max(20px,env(safe-area-inset-top))]">
+        <Link
+          to={`/trip/${trip.id}`}
+          className="tap label-caps no-print -ml-2 inline-flex items-center rounded-full px-2 text-text-ink/55"
+        >
+          ← {trip.title}
+        </Link>
 
-      <h1 className="font-display text-display-l mt-5">この旅を渡す</h1>
+        <h1 className="font-display text-display-l mt-4">この旅を渡す</h1>
+        <p className={`mt-2 text-[13px] leading-relaxed ${subText}`}>
+          受け取った人がその場で全体を掴めるよう、日ごとの行程を入れて渡します。
+        </p>
 
-      {/* 共有カードのプレビュー = 印刷対象 */}
-      <div className="print-sheet mt-8 rounded-card border border-white/12 bg-white/[0.04] p-6">
+        {/* 共有カードのプレビュー = 印刷対象 */}
+        <div className="print-sheet mt-7 rounded-card border border-black/10 bg-white/70 p-6">
         <p className="mono-readout text-[11px] text-brass">PASSAGE</p>
         <h2 className="font-display text-display-m mt-2">{trip.title}</h2>
-        <p className="mono-readout mt-1 text-[12px] text-text-porcelain/55">
+        <p className={`mono-readout mt-1 text-[12px] ${subText}`}>
           {formatDateRange(trip.startDate, trip.endDate)} · {trip.destination}
         </p>
 
@@ -93,46 +97,80 @@ export function ShareScreen() {
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <StatReadout label="DAYS" value={stats.dayCount} tone="dark" size="s" />
-          <StatReadout label="DISTANCE" value={formatKm(stats.distanceKm)} tone="dark" size="s" />
+          <StatReadout label="DAYS" value={stats.dayCount} tone="light" size="s" />
           <StatReadout
-            label="SPENT"
+            label="DISTANCE"
+            value={formatKm(stats.distanceKm)}
+            tone="light"
+            size="s"
+          />
+          <StatReadout
+            label={trip.memory ? 'SPENT' : 'BUDGET'}
             value={formatCurrency(spend, trip.budget.currency)}
-            tone="dark"
+            tone="light"
             size="s"
           />
         </div>
 
+        {/* 全行程。共有の主目的なので要約より前に置く */}
+        <div className={`mt-6 space-y-4 border-t pt-5 border-black/8`}>
+          {trip.itinerary.map((day, i) => (
+            <div key={day.id}>
+              <p className="mono-readout text-[11px] text-brass">
+                DAY {String(i + 1).padStart(2, '0')}
+                <span className={`ml-2 ${subText}`}>
+                  {formatDateDot(day.date)} {weekdayEn(day.date)}
+                </span>
+              </p>
+              {day.items.length === 0 ? (
+                <p className={`mt-1 text-[12px] ${subText}`}>予定なし</p>
+              ) : (
+                <ul className="mt-1.5 space-y-1">
+                  {day.items.map((item) => (
+                    <li key={item.id} className={`flex gap-3 text-[13px] ${bodyText}`}>
+                      <span className="mono-readout shrink-0 text-[11px] opacity-70">
+                        {item.plannedArrival ?? '--:--'}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        {spotById.get(item.spotId)?.name ?? '予定'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+
         {trip.memory?.narrative && (
-          <p className="mt-6 whitespace-pre-line text-[13px] leading-[1.95] text-text-porcelain/75">
+          <p className={`mt-6 whitespace-pre-line text-[13px] leading-[1.95] ${bodyText}`}>
             {trip.memory.narrative}
           </p>
         )}
       </div>
 
-      <div className="no-print mt-8 flex flex-wrap gap-3">
-        <Button variant="primary" onClick={share}>
-          共有する
-        </Button>
-        <Button tone="dark" onClick={copy}>
+        <div className="no-print mt-8 flex flex-wrap gap-3">
+          <Button variant="primary" onClick={share}>
+            共有する
+          </Button>
+        <Button tone="light" onClick={copy}>
           テキストをコピー
         </Button>
-        <Button tone="dark" onClick={() => window.print()}>
+        <Button tone="light" onClick={() => window.print()}>
           PDF に書き出す
         </Button>
-        <Button tone="dark" onClick={exportJson}>
+        <Button tone="light" onClick={exportJson}>
           データを保存（JSON）
         </Button>
       </div>
 
-      {note && (
-        <p className="mono-readout no-print mt-4 text-[12px] text-brass">{note}</p>
-      )}
+        {note && <p className="mono-readout no-print mt-4 text-[12px] text-brass">{note}</p>}
 
-      <p className="mono-readout no-print mt-10 text-[11px] leading-relaxed text-text-porcelain/30">
-        PDF はブラウザの印刷ダイアログから「PDF に保存」を選んでください。
-        共有リンクの発行は、データをクラウドに置いたあとの機能になります（14章）。
-      </p>
+        <p className="mono-readout no-print mt-10 text-[11px] leading-relaxed text-text-ink/35">
+          PDF はブラウザの印刷ダイアログから「PDF に保存」を選んでください。
+          共有リンクの発行は、データをクラウドに置いたあとの機能になります（14章）。
+        </p>
+      </div>
     </div>
   )
 }
