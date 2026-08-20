@@ -24,6 +24,13 @@ import { formatCurrency } from '@/lib/format'
 /** 実 API 導入までの遅延演出。UX の「考えている間」を再現する。 */
 const think = (ms = 620) => new Promise<void>((r) => setTimeout(r, ms))
 
+/** ペースごとの「快適な」1日あたりのスポット数。取捨選択画面の詰め込み判定にも使う。 */
+export const PACE_CAPACITY: Record<TripContext['pace'], number> = {
+  relaxed: 2,
+  balanced: 3,
+  packed: 4,
+}
+
 function pickSeeds(destination: string, interests: string[], count: number): Spot[] {
   const key = Object.keys(spotSeeds).find((k) => destination.includes(k))
   const pool = key ? spotSeeds[key] : Object.values(spotSeeds).flat()
@@ -62,9 +69,9 @@ function closedOnDate(spot: Spot | undefined, dateISO: string): boolean {
  * 実運用で本当に効く 3 種類の検証を行い、UX パターンを検証できるようにする。
  */
 export class MockAIAgentProvider implements AIAgentProvider {
-  async suggestSpots(context: TripContext): Promise<Spot[]> {
+  async suggestSpots(context: TripContext, opts?: { overshoot?: boolean }): Promise<Spot[]> {
     await think()
-    const perDay = context.pace === 'packed' ? 4 : context.pace === 'relaxed' ? 2 : 3
+    const perDay = PACE_CAPACITY[context.pace]
     const days = Math.max(
       1,
       Math.round(
@@ -72,7 +79,11 @@ export class MockAIAgentProvider implements AIAgentProvider {
           86_400_000,
       ) + 1,
     )
-    return pickSeeds(context.destination, context.interests, Math.min(12, perDay * days))
+    // overshoot: ペースどおりに収まる件数より多めに出し、あとで取捨選択できるようにする
+    const count = opts?.overshoot
+      ? Math.min(16, Math.ceil(perDay * 1.6) * days)
+      : Math.min(12, perDay * days)
+    return pickSeeds(context.destination, context.interests, count)
   }
 
   async optimizeItinerary(trip: Trip) {

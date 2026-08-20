@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import type { Spot, TripContext, WindowCostEstimate } from '@/types'
+import type { ItineraryDay, Spot, TripContext, WindowCostEstimate } from '@/types'
 import { Button } from '@/components/common/Button'
 import { Chip } from '@/components/common/QuestChip'
 import { Thread } from '@/components/thread/Thread'
 import { CostTimingChart } from '@/components/plan/CostTimingChart'
-import { SpotGrid } from '@/components/spots/SpotGrid'
+import { DraftItineraryReview } from '@/components/plan/DraftItineraryReview'
 import { aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
 import {
   COVER_PHOTOS,
@@ -76,6 +76,7 @@ export function TripCreateScreen() {
 
   const [thinking, setThinking] = useState(false)
   const [proposals, setProposals] = useState<Spot[]>([])
+  const [draftItinerary, setDraftItinerary] = useState<ItineraryDay[] | null>(null)
 
   const dates = useMemo(
     () => (startDate && endDate && endDate >= startDate ? dateRange(startDate, endDate) : []),
@@ -110,22 +111,32 @@ export function TripCreateScreen() {
     setThinking(true)
     setStep(3)
     try {
-      const spots = await aiAgent.suggestSpots({
-        destination,
-        startDate,
-        endDate,
-        interests,
-        pace,
-        companions,
-      })
+      // overshoot: ペースぴったりより多めに候補を取り、そのまま日に詰め込んでから
+      // 「取捨選択」できるようにする（1枚ずつ選んでから組み立てる方式はやめた）
+      const spots = await aiAgent.suggestSpots(
+        { destination, startDate, endDate, interests, pace, companions },
+        { overshoot: true },
+      )
       setProposals(spots)
+      setDraftItinerary(spots.length ? buildDraftItinerary(spots, dates) : null)
     } finally {
       setThinking(false)
     }
   }
 
-  /** デッキで「行く」に振り分けたスポットだけで旅をつくる。 */
-  function finish(picked: Spot[]) {
+  function removeDraftItem(dayId: string, itemId: string) {
+    setDraftItinerary((prev) =>
+      prev
+        ? prev.map((d) => (d.id === dayId ? { ...d, items: d.items.filter((i) => i.id !== itemId) } : d))
+        : prev,
+    )
+  }
+
+  /** AI が組み立てた旅程から、取捨選択で残った分だけで旅をつくる。 */
+  function finish() {
+    const itinerary = draftItinerary ?? []
+    const usedSpotIds = new Set(itinerary.flatMap((d) => d.items.map((i) => i.spotId)))
+    const picked = proposals.filter((s) => usedSpotIds.has(s.id))
     const trip = createTrip({
       title: (title.trim() || destination).toUpperCase(),
       destination,
@@ -133,7 +144,7 @@ export function TripCreateScreen() {
       endDate,
       coverPhotoUrl: COVER_PHOTOS[destination] ?? picked[0]?.photoUrls[0] ?? FALLBACK_COVER,
       spots: picked,
-      itinerary: picked.length ? buildDraftItinerary(picked, dates) : undefined,
+      itinerary: itinerary.length ? itinerary : undefined,
     })
     navigate(`/trip/${trip.id}`, { replace: true })
   }
@@ -484,7 +495,7 @@ export function TripCreateScreen() {
             <section className="flex h-full flex-col">
               <p className="label-caps text-brass">STEP 04</p>
               <h1 className="font-display text-display-l mt-2">
-                {thinking ? '候補を探しています' : '行きたい場所を選ぶ'}
+                {thinking ? 'AIが組み立てています' : 'AIが組み立てました'}
               </h1>
 
               {thinking ? (
@@ -500,17 +511,28 @@ export function TripCreateScreen() {
                     {destination} / {dates.length} DAYS / {interests.join(' · ') || '指定なし'}
                   </p>
                 </div>
-              ) : proposals.length === 0 ? (
-                <p className="mt-6 rounded-2xl border border-white/10 p-5 text-[14px] leading-relaxed text-text-porcelain/55">
-                  この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
-                </p>
+              ) : !draftItinerary ? (
+                <>
+                  <p className="mt-6 rounded-2xl border border-white/10 p-5 text-[14px] leading-relaxed text-text-porcelain/55">
+                    この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
+                  </p>
+                  <Button variant="primary" className="mt-5" onClick={finish}>
+                    空の旅程でつくる
+                  </Button>
+                </>
               ) : (
                 <>
                   <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-                    タップして選ぶ。順番と時間はあとで AI が組み立てます。
+                    候補を詰め込んで一旦組み立てました。多すぎる日は「外す」で減らしてください。
                   </p>
                   <div className="mt-5 flex flex-1 flex-col">
-                    <SpotGrid spots={proposals} onFinish={finish} finishLabel="この旅をつくる" />
+                    <DraftItineraryReview
+                      itinerary={draftItinerary}
+                      spots={proposals}
+                      pace={pace}
+                      onRemoveItem={removeDraftItem}
+                      onFinish={finish}
+                    />
                   </div>
                 </>
               )}
@@ -532,12 +554,6 @@ export function TripCreateScreen() {
           {step === 2 && (
             <Button variant="primary" className="w-full" onClick={askAgent}>
               AI に骨格を組んでもらう
-            </Button>
-          )}
-          {/* 候補が無いときだけ、空の旅程で作る導線を出す（通常はデッキ側の CTA を使う） */}
-          {step === 3 && !thinking && proposals.length === 0 && (
-            <Button variant="primary" className="w-full" onClick={() => finish([])}>
-              空の旅程でつくる
             </Button>
           )}
         </footer>

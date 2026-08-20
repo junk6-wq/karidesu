@@ -8,8 +8,10 @@ import { aiAgent } from '@/lib/providers/mockAgent'
 import { usePreferencesStore } from '@/store/preferencesStore'
 
 /**
- * 既存の旅にスポットを足すときの選択画面。Trip 作成時と同じ SpotGrid を使う。
- * 選び終わったら予定の少ない日へ自動で振り分け、続けて AI が時間と移動を整える。
+ * 既存の旅にスポットを足すときの選択画面。
+ * ここは Trip 作成時と違い、すでに旅程がある中へピンポイントで数件足す場面なので、
+ * SpotGrid（タップで選ぶ一覧）のままにしている。選び終わったら予定の少ない日へ
+ * 自動で振り分け、続けて AI が時間と移動を整える。
  */
 export function SpotPickScreen() {
   const { id } = useParams()
