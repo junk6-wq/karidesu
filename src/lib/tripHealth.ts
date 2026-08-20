@@ -17,6 +17,8 @@ function levelOf(score: number): LoadLevel {
 /**
  * DAY ごとの負荷スコア（0–100、高いほど詰め込み気味）。
  * スポット数・移動時間・滞在時間・早朝/深夜予定・空き時間不足から算出する。
+ * 移動区間（travelToNext）が未計算だとこのスコアは実質カウント分しか動かないため、
+ * runOptimize を通す前の旅程（Trip 作成中の取捨選択画面など）には使わない。
  */
 export function evaluateDayLoadSync(trip: Trip): DayLoad[] {
   return trip.itinerary.map((day) => ({ dayId: day.id, ...scoreDay(day) }))

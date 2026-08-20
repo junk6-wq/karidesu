@@ -229,7 +229,11 @@ export interface DayLoad {
 }
 
 export interface AIAgentProvider {
-  suggestSpots(context: TripContext): Promise<Spot[]>
+  /**
+   * opts.overshoot: 「AI が組み立てて、詰め込みすぎた分を後から外す」フロー用に、
+   * ペースに対して余裕を持った件数を返す（Trip 作成時のみ使用）。
+   */
+  suggestSpots(context: TripContext, opts?: { overshoot?: boolean }): Promise<Spot[]>
   optimizeItinerary(trip: Trip): Promise<{ days: ItineraryDay[]; warnings: ItineraryWarning[] }>
   detectDelay(journey: JourneyState, trip: Trip): Promise<ReplanSuggestion[]>
   generateTravelogue(trip: Trip): Promise<MemoryEntry>
