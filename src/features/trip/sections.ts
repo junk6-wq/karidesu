@@ -29,10 +29,11 @@ export function sectionsFor(trip: Trip, mode: Mode): SectionState[] {
     ]
   }
   if (mode === 'memory') {
+    // 共有はモードに属さない単発の操作なので TripLayout の外（/trip/:id/share）。
+    // ここに載せると currentMode が 'plan' を返し、モードタブが PLAN に飛んでしまう。
     return [
       { id: 'memory', label: '旅行記', path: `/trip/${trip.id}/memory`, exact: true },
       { id: 'stats', label: '記録', path: `/trip/${trip.id}/memory/stats` },
-      { id: 'share', label: '共有', path: `/trip/${trip.id}/share` },
     ]
   }
   return []

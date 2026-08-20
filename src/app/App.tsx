@@ -25,6 +25,9 @@ export function App() {
       <Route path="/trip/new" element={<TripCreateScreen />} />
       {/* デッキは没入表示にしたいので、モードタブを持つ TripLayout の外に置く */}
       <Route path="/trip/:id/pick" element={<SpotPickScreen />} />
+      {/* 共有は特定のモードに属さない単発の操作。モードタブの外に出して、
+          PLAN からも MEMORY からも同じ見た目で開けるようにする */}
+      <Route path="/trip/:id/share" element={<ShareScreen />} />
 
       <Route path="/trip/:id" element={<TripLayout />}>
         <Route index element={<TripOverviewScreen />} />
@@ -38,7 +41,6 @@ export function App() {
 
         <Route path="memory" element={<MemoryScreen />} />
         <Route path="memory/stats" element={<MemoryStatsScreen />} />
-        <Route path="share" element={<ShareScreen />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

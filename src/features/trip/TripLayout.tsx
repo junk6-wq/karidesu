@@ -90,6 +90,18 @@ export function TripLayout() {
             ← 棚
           </Link>
           <span className="min-w-0 flex-1 truncate font-display text-[20px]">{trip.title}</span>
+          {/* モードに属さない単発の操作は、タブ行ではなくここに並べる */}
+          <Link
+            to={`/trip/${trip.id}/share`}
+            aria-label="この旅を共有する"
+            className={`tap label-caps flex items-center rounded-full border px-3 ${
+              dark
+                ? 'border-white/20 text-text-porcelain/70'
+                : 'border-black/12 text-text-ink/60'
+            }`}
+          >
+            共有
+          </Link>
           <Link
             to={`/trip/${trip.id}/agent`}
             className={`tap label-caps flex items-center rounded-full border px-3 ${
