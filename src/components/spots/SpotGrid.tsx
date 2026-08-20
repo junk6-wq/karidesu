@@ -8,6 +8,40 @@ const PHOTO_SWIPE_THRESHOLD = 40
 /** これ以上動いたら「ドラッグ中」とみなし、離したときのタップ判定を打ち消す。 */
 const PHOTO_DRAG_SLOP = 8
 
+/** 選択件数と目安件数から、詰め込み具合のフィードバックを作る。 */
+function paceFeedback(count: number, recommended: number) {
+  if (count === 0) {
+    return {
+      mark: '·',
+      message: `${recommended} 件くらいがちょうどいいペースです。`,
+      className: 'border-white/12 bg-white/[0.04] text-text-porcelain/60',
+    }
+  }
+  if (count > recommended + 2) {
+    return {
+      mark: '🔴',
+      message: `目安より ${count - recommended} 件多めです。かなり駆け足になります。`,
+      className: 'border-brick/40 bg-brick/12 text-brick',
+    }
+  }
+  if (count > recommended) {
+    return {
+      mark: '🟠',
+      message: `目安より ${count - recommended} 件多めです。少し急ぎ足になるかもしれません。`,
+      className:
+        'border-[color:var(--c-amber)]/35 bg-[color:var(--c-amber)]/12 text-[color:var(--c-amber)]',
+    }
+  }
+  return {
+    mark: '🟢',
+    message:
+      count === recommended
+        ? 'ちょうどいいペースです。'
+        : `あと ${recommended - count} 件くらい足せます。`,
+    className: 'border-brass/30 bg-brass/10 text-brass',
+  }
+}
+
 /**
  * スポット候補を一覧で見せて、タップで複数選ぶグリッド。
  * 写真主体のカードで「行きたい場所を選ぶ」体験は保ちつつ、1枚ずつ順に決める
@@ -22,11 +56,17 @@ export function SpotGrid({
   onFinish,
   finishLabel = 'この内容で組み立てる',
   busy = false,
+  recommended,
 }: {
   spots: Spot[]
   onFinish: (taken: Spot[]) => void
   finishLabel?: string
   busy?: boolean
+  /**
+   * 選んだペース・日数から決まる「このくらいが気持ちいい」件数。
+   * 渡されたときだけ、選択中に多すぎ/少なすぎを知らせる。
+   */
+  recommended?: number
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
@@ -40,13 +80,25 @@ export function SpotGrid({
   }
 
   const taken = spots.filter((s) => selected.has(s.id))
+  const pace = recommended ? paceFeedback(taken.length, recommended) : undefined
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center justify-between">
         <span className="mono-readout text-[12px] text-text-porcelain/50">{spots.length} 件の候補</span>
-        <span className="mono-readout text-[12px] text-brass">{taken.length} 件えらんだ</span>
+        <span className="mono-readout text-[12px] text-brass">
+          {taken.length}
+          {recommended ? ` / ${recommended}` : ''} 件えらんだ
+        </span>
       </div>
+
+      {/* 選んでいる最中に「今のペースに対して多いか少ないか」を返す。
+          AI が先に組み立てて外させるのではなく、選ぶ手を止めずに気づけるようにする。 */}
+      {pace && (
+        <p className={`mt-3 rounded-2xl border p-3 text-[13px] leading-relaxed ${pace.className}`}>
+          {pace.mark} {pace.message}
+        </p>
+      )}
 
       {/* 写真で行くか判断できるよう、1〜2列に絞って1枚あたりを大きく見せる */}
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
