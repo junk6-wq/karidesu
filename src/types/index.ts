@@ -234,6 +234,18 @@ export interface AIAgentProvider {
    * ペースに対して余裕を持った件数を返す（Trip 作成時のみ使用）。
    */
   suggestSpots(context: TripContext, opts?: { overshoot?: boolean }): Promise<Spot[]>
+  /**
+   * ある予定の「代わりに行ける場所」を返す。
+   * すでに行ったことがある場所を別の候補に差し替えるために使う。
+   * 同じカテゴリを優先し、元の場所から近い順に並べる。
+   */
+  suggestAlternatives(input: {
+    destination: string
+    current: Spot
+    /** 旅程・候補にすでに入っている名前。重複を出さないために除外する。 */
+    excludeNames: string[]
+    limit?: number
+  }): Promise<Spot[]>
   optimizeItinerary(trip: Trip): Promise<{ days: ItineraryDay[]; warnings: ItineraryWarning[] }>
   detectDelay(journey: JourneyState, trip: Trip): Promise<ReplanSuggestion[]>
   generateTravelogue(trip: Trip): Promise<MemoryEntry>

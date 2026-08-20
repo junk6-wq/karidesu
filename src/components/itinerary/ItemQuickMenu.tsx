@@ -16,6 +16,7 @@ export function ItemQuickMenu({
   onDuplicate,
   onDelete,
   onOpenDetail,
+  onSwap,
 }: {
   open: boolean
   onClose: () => void
@@ -27,6 +28,8 @@ export function ItemQuickMenu({
   onDuplicate: () => void
   onDelete: () => void
   onOpenDetail: () => void
+  /** 別の場所に差し替える（すでに行ったことがある場所を置き換えるとき）。 */
+  onSwap?: () => void
 }) {
   function run(action: () => void) {
     action()
@@ -39,6 +42,7 @@ export function ItemQuickMenu({
         <MenuRow label="上へ移動" onClick={() => run(onMoveUp)} disabled={isFirst} />
         <MenuRow label="下へ移動" onClick={() => run(onMoveDown)} disabled={isLast} />
         <MenuRow label="時間・DAYを編集" onClick={() => run(onOpenDetail)} />
+        {onSwap && <MenuRow label="別の場所に変える" onClick={() => run(onSwap)} />}
         <MenuRow label="複製する" onClick={() => run(onDuplicate)} />
         <MenuRow label="削除する" tone="danger" onClick={() => run(onDelete)} />
       </div>

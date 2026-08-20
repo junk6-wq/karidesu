@@ -16,7 +16,7 @@ import type {
 import { uid } from '@/lib/id'
 import { estimateDurationMin, haversineKm } from '@/lib/geo'
 import { addMinutes, formatDuration, toMinutes, weekdayJa } from '@/lib/time'
-import { spotSeeds } from './spotSeeds'
+import { poolFor, seedToSpot } from './spotSeeds'
 import { proposeItineraryChanges as buildProposals } from '@/lib/aiProposals'
 import { evaluateDayLoadSync, evaluateTripHealthSync } from '@/lib/tripHealth'
 import { formatCurrency } from '@/lib/format'
@@ -32,28 +32,12 @@ export const PACE_CAPACITY: Record<TripContext['pace'], number> = {
 }
 
 function pickSeeds(destination: string, interests: string[], count: number): Spot[] {
-  const key = Object.keys(spotSeeds).find((k) => destination.includes(k))
-  const pool = key ? spotSeeds[key] : Object.values(spotSeeds).flat()
-
-  const scored = pool.map((seed) => {
+  const scored = poolFor(destination).map((seed) => {
     const hit = interests.filter((i) => seed.tags.includes(i)).length
     return { seed, score: hit }
   })
   scored.sort((a, b) => b.score - a.score)
-
-  return scored.slice(0, count).map(({ seed }) => ({
-    id: uid('spot'),
-    name: seed.name,
-    category: seed.category,
-    location: seed.location,
-    photoUrls: seed.photoUrls,
-    openingHours: seed.openingHours,
-    closedDays: seed.closedDays,
-    estimatedStayMin: seed.estimatedStayMin,
-    priceLevel: seed.priceLevel,
-    aiRecommended: true,
-    source: 'ai' as const,
-  }))
+  return scored.slice(0, count).map(({ seed }) => seedToSpot(seed))
 }
 
 /** 定休日メモ（"月" など）と実際の曜日が衝突していないか見る。 */
@@ -84,6 +68,29 @@ export class MockAIAgentProvider implements AIAgentProvider {
       ? Math.min(16, Math.ceil(perDay * 1.6) * days)
       : Math.min(12, perDay * days)
     return pickSeeds(context.destination, context.interests, count)
+  }
+
+  async suggestAlternatives({
+    destination,
+    current,
+    excludeNames,
+    limit = 6,
+  }: {
+    destination: string
+    current: Spot
+    excludeNames: string[]
+    limit?: number
+  }): Promise<Spot[]> {
+    await think(280)
+    const exclude = new Set([...excludeNames, current.name])
+    const pool = poolFor(destination).filter((s) => !exclude.has(s.name))
+    // 同じ性格の場所を優先し、その中では元の場所に近い順。
+    // 旅程の地理的なまとまりを崩さずに差し替えられるようにする。
+    const near = (a: { location: GeoPoint }, b: { location: GeoPoint }) =>
+      haversineKm(current.location, a.location) - haversineKm(current.location, b.location)
+    const sameCategory = pool.filter((s) => s.category === current.category).sort(near)
+    const others = pool.filter((s) => s.category !== current.category).sort(near)
+    return [...sameCategory, ...others].slice(0, limit).map(seedToSpot)
   }
 
   async optimizeItinerary(trip: Trip) {

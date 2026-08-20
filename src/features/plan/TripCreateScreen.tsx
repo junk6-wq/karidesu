@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import type { Spot, TripContext, WindowCostEstimate } from '@/types'
+import type { ItineraryDay, Spot, TripContext, WindowCostEstimate } from '@/types'
 import { Button } from '@/components/common/Button'
 import { Chip } from '@/components/common/QuestChip'
 import { Thread } from '@/components/thread/Thread'
 import { CostTimingChart } from '@/components/plan/CostTimingChart'
-import { SpotGrid } from '@/components/spots/SpotGrid'
+import { ModelPlanReview } from '@/components/plan/ModelPlanReview'
+import { SpotSwapSheet } from '@/components/plan/SpotSwapSheet'
 import { PACE_CAPACITY, aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
 import {
   COVER_PHOTOS,
@@ -21,6 +22,13 @@ import { usePreferencesStore } from '@/store/preferencesStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 
 type Step = 0 | 1 | 2 | 3
+
+/**
+ * モデルプランに使わずに残しておく候補の数。
+ * 候補を全部プランに入れてしまうと「別の場所に変える」で出せる選択肢が
+ * 無くなるため、差し替え用にこの数だけ手元に残す。
+ */
+const SWAP_RESERVE = 4
 
 const PACE_LABEL = {
   relaxed: { label: 'ゆっくり', note: '1 日 2 か所くらい' },
@@ -75,7 +83,10 @@ export function TripCreateScreen() {
   const [estimates, setEstimates] = useState<WindowCostEstimate[] | null>(null)
 
   const [thinking, setThinking] = useState(false)
-  const [proposals, setProposals] = useState<Spot[]>([])
+  // モデルプランに登場しうるスポット（差し替えで増える分も含む）
+  const [planSpots, setPlanSpots] = useState<Spot[]>([])
+  const [modelPlan, setModelPlan] = useState<ItineraryDay[] | null>(null)
+  const [swapTarget, setSwapTarget] = useState<{ itemId: string; current: Spot } | null>(null)
 
   const dates = useMemo(
     () => (startDate && endDate && endDate >= startDate ? dateRange(startDate, endDate) : []),
@@ -106,26 +117,52 @@ export function TripCreateScreen() {
     setEndDate(e.endDate)
   }
 
+  /** ペースと日数から決まる、1 旅程に入れる件数の目安。 */
+  const recommendedCount = Math.max(1, PACE_CAPACITY[pace] * Math.max(1, dates.length))
+
+  /** AI にモデルプランを丸ごと組み立ててもらう。 */
   async function askAgent() {
     setThinking(true)
     setStep(3)
     try {
-      // overshoot: ペースぴったりの件数だと選ぶ余地が無くなるので、候補は多めに出す
+      // overshoot でその土地の候補を広く取り、そこからプラン分を切り出す
       const spots = await aiAgent.suggestSpots(
         { destination, startDate, endDate, interests, pace, companions },
         { overshoot: true },
       )
-      setProposals(spots)
+      // 全部を使い切るとあとで差し替える先が無くなるので、必ず数件は残す
+      const planSize = Math.max(1, Math.min(recommendedCount, spots.length - SWAP_RESERVE))
+      const picked = spots.slice(0, planSize)
+      setPlanSpots(picked)
+      setModelPlan(picked.length ? buildDraftItinerary(picked, dates) : null)
     } finally {
       setThinking(false)
     }
   }
 
-  /** ペースと日数から決まる「このくらいが気持ちいい」件数。選択中の目安に使う。 */
-  const recommendedCount = Math.max(1, PACE_CAPACITY[pace] * Math.max(1, dates.length))
+  /** 予定 1 件を別の場所に差し替える。時間帯はそのまま引き継ぐ。 */
+  function swapItem(itemId: string, next: Spot) {
+    setPlanSpots((prev) => (prev.some((s) => s.id === next.id) ? prev : [...prev, next]))
+    setModelPlan(
+      (prev) =>
+        prev?.map((d) => ({
+          ...d,
+          items: d.items.map((i) => (i.id === itemId ? { ...i, spotId: next.id } : i)),
+        })) ?? prev,
+    )
+  }
 
-  /** 選んだスポットで旅をつくる。順番と時刻はここで AI が組み立てる。 */
-  function finish(picked: Spot[]) {
+  function removeItem(itemId: string) {
+    setModelPlan(
+      (prev) => prev?.map((d) => ({ ...d, items: d.items.filter((i) => i.id !== itemId) })) ?? prev,
+    )
+  }
+
+  /** モデルプランをそのまま旅にする。差し替えで使わなくなったスポットは持ち込まない。 */
+  function finish() {
+    const itinerary = modelPlan ?? []
+    const usedIds = new Set(itinerary.flatMap((d) => d.items.map((i) => i.spotId)))
+    const picked = planSpots.filter((s) => usedIds.has(s.id))
     const trip = createTrip({
       title: (title.trim() || destination).toUpperCase(),
       destination,
@@ -133,7 +170,7 @@ export function TripCreateScreen() {
       endDate,
       coverPhotoUrl: COVER_PHOTOS[destination] ?? picked[0]?.photoUrls[0] ?? FALLBACK_COVER,
       spots: picked,
-      itinerary: picked.length ? buildDraftItinerary(picked, dates) : undefined,
+      itinerary: itinerary.length ? itinerary : undefined,
     })
     navigate(`/trip/${trip.id}`, { replace: true })
   }
@@ -484,7 +521,7 @@ export function TripCreateScreen() {
             <section className="flex h-full flex-col">
               <p className="label-caps text-brass">STEP 04</p>
               <h1 className="font-display text-display-l mt-2">
-                {thinking ? '候補を探しています' : '行きたい場所を選ぶ'}
+                {thinking ? 'モデルプランを組んでいます' : 'モデルプランができました'}
               </h1>
 
               {thinking ? (
@@ -500,26 +537,26 @@ export function TripCreateScreen() {
                     {destination} / {dates.length} DAYS / {interests.join(' · ') || '指定なし'}
                   </p>
                 </div>
-              ) : proposals.length === 0 ? (
+              ) : !modelPlan ? (
                 <>
                   <p className="mt-6 rounded-2xl border border-white/10 p-5 text-[14px] leading-relaxed text-text-porcelain/55">
                     この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
                   </p>
-                  <Button variant="primary" className="mt-5" onClick={() => finish([])}>
+                  <Button variant="primary" className="mt-5" onClick={finish}>
                     空の旅程でつくる
                   </Button>
                 </>
               ) : (
                 <>
                   <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-                    タップして選ぶ。順番と時間はあとで AI が組み立てます。
+                    行ったことがある場所は「別の場所に変える」で差し替えられます。
                   </p>
                   <div className="mt-5 flex flex-1 flex-col">
-                    <SpotGrid
-                      spots={proposals}
-                      recommended={recommendedCount}
+                    <ModelPlanReview
+                      itinerary={modelPlan}
+                      spots={planSpots}
+                      onSwapRequest={(itemId, current) => setSwapTarget({ itemId, current })}
                       onFinish={finish}
-                      finishLabel="この旅をつくる"
                     />
                   </div>
                 </>
@@ -541,11 +578,23 @@ export function TripCreateScreen() {
           )}
           {step === 2 && (
             <Button variant="primary" className="w-full" onClick={askAgent}>
-              AI に骨格を組んでもらう
+              AI にモデルプランを組んでもらう
             </Button>
           )}
         </footer>
       </div>
+
+      {swapTarget && (
+        <SpotSwapSheet
+          open
+          destination={destination}
+          current={swapTarget.current}
+          excludeNames={planSpots.map((s) => s.name)}
+          onClose={() => setSwapTarget(null)}
+          onSelect={(next) => swapItem(swapTarget.itemId, next)}
+          onRemove={() => removeItem(swapTarget.itemId)}
+        />
+      )}
     </div>
   )
 }

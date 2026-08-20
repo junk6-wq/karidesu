@@ -18,6 +18,7 @@ import type { ItineraryItem } from '@/types'
 import { useTrip, useTripWarnings, useTripsStore } from '@/store/tripsStore'
 import { TimelineNode, type NodeState } from '@/components/itinerary/TimelineNode'
 import { ItemQuickMenu } from '@/components/itinerary/ItemQuickMenu'
+import { SpotSwapSheet } from '@/components/plan/SpotSwapSheet'
 import { TripCheck } from '@/components/agent/TripCheck'
 import { MapLayer } from '@/components/map/MapLayer'
 import { Button } from '@/components/common/Button'
@@ -49,6 +50,7 @@ export function ItineraryScreen() {
     moveItemDown,
     duplicateItem,
     removeItem,
+    swapItemSpot,
   } = useTripsStore()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -58,6 +60,7 @@ export function ItineraryScreen() {
   const [focusId, setFocusId] = useState<string | undefined>()
   const [mobileTab, setMobileTab] = useState<'timeline' | 'map'>('timeline')
   const [menuTarget, setMenuTarget] = useState<MenuTarget | null>(null)
+  const [swapItemId, setSwapItemId] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -137,6 +140,12 @@ export function ItineraryScreen() {
 
   const menuDay = menuTarget ? trip.itinerary.find((d) => d.id === menuTarget.dayId) : undefined
   const menuIndex = menuDay?.items.findIndex((i) => i.id === menuTarget?.itemId) ?? -1
+
+  const swapSpot = swapItemId
+    ? spotById.get(
+        trip.itinerary.flatMap((d) => d.items).find((i) => i.id === swapItemId)?.spotId ?? '',
+      )
+    : undefined
 
   return (
     <div className="mx-auto max-w-[1200px] px-5 pb-28 pt-6">
@@ -306,6 +315,22 @@ export function ItineraryScreen() {
             setFocusId(menuTarget.itemId)
             setOpenItemId(menuTarget.itemId)
           }}
+          onSwap={() => setSwapItemId(menuTarget.itemId)}
+        />
+      )}
+
+      {swapSpot && (
+        <SpotSwapSheet
+          open
+          destination={trip.destination}
+          current={swapSpot}
+          excludeNames={trip.spots.map((s) => s.name)}
+          onClose={() => setSwapItemId(null)}
+          onSelect={(next) => {
+            swapItemSpot(trip.id, swapItemId!, next)
+            void runOptimize(trip.id)
+          }}
+          onRemove={() => removeItem(trip.id, swapItemId!)}
         />
       )}
     </div>
