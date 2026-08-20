@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTrip, useTripWarnings } from '@/store/tripsStore'
 import { Photo } from '@/components/common/Photo'
@@ -54,6 +55,7 @@ export function TripOverviewScreen() {
   const { id } = useParams()
   const trip = useTrip(id)
   const warnings = useTripWarnings(id)
+  const [showBreakdown, setShowBreakdown] = useState(false)
   if (!trip) return <Navigate to="/" replace />
 
   const stats = tripStats(trip)
@@ -136,16 +138,19 @@ export function TripOverviewScreen() {
             </LinkButton>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {Object.entries(health.breakdown).map(([key, value]) => (
-              <div key={key} className="min-w-0">
-                <p className="label-caps truncate text-text-ink/35">{HEALTH_LABELS[key] ?? key}</p>
-                <p className="mono-readout mt-0.5 text-[15px] text-text-ink">{value}</p>
-              </div>
-            ))}
-          </div>
+          {/* 内訳は数字が並ぶだけで直接の行動には繋がらないため、既定では畳んでおく */}
+          {showBreakdown && (
+            <div className="anim-fade mt-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
+              {Object.entries(health.breakdown).map(([key, value]) => (
+                <div key={key} className="min-w-0">
+                  <p className="label-caps truncate text-text-ink/35">{HEALTH_LABELS[key] ?? key}</p>
+                  <p className="mono-readout mt-0.5 text-[15px] text-text-ink">{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
-          <div className="mt-5 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[13px] text-text-ink/65">
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[13px] text-text-ink/65">
             <span>
               旅程 <b className="mono-readout text-brass">{completeness}%</b> 完成
             </span>
@@ -159,6 +164,13 @@ export function TripOverviewScreen() {
           </div>
 
           <p className="mt-3 text-[13px] leading-relaxed text-text-ink/60">{nextAction}</p>
+
+          <button
+            onClick={() => setShowBreakdown((v) => !v)}
+            className="tap mt-1 text-[12px] text-text-ink/45 underline decoration-dotted underline-offset-2"
+          >
+            {showBreakdown ? '内訳を閉じる' : '内訳を見る'}
+          </button>
         </div>
 
         {/* 旅の骨格 */}
@@ -232,14 +244,6 @@ export function TripOverviewScreen() {
           </div>
         </section>
 
-        <div className="mt-10 flex flex-wrap gap-3">
-          <LinkButton to={`/trip/${trip.id}/plan/itinerary`} variant="primary">
-            旅程をひらく
-          </LinkButton>
-          <LinkButton to={`/trip/${trip.id}/plan/spots`}>スポット</LinkButton>
-          <LinkButton to={`/trip/${trip.id}/plan/budget`}>予算</LinkButton>
-          <LinkButton to={`/trip/${trip.id}/agent`}>AI と組み立てる</LinkButton>
-        </div>
       </div>
     </div>
   )
