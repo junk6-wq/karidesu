@@ -3,6 +3,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigate, useParams } from 'rea
 import { useTrip } from '@/store/tripsStore'
 import { Thread } from '@/components/thread/Thread'
 import { currentMode, modesFor, type Mode } from './modes'
+import { currentSection, sectionsFor } from './sections'
 
 /**
  * Trip のシェル。モードタブ（横スワイプ対応）と、
@@ -22,6 +23,9 @@ export function TripLayout() {
   const modes = modesFor(trip)
   const active = currentMode(location.pathname)
   const immersive = active === 'journey'
+  const sections = sectionsFor(trip, active)
+  const activeSection = currentSection(location.pathname, sections)
+  const unlockedModeCount = modes.filter((m) => m.unlocked).length
 
   function go(mode: Mode) {
     const target = modes.find((m) => m.id === mode)
@@ -98,6 +102,10 @@ export function TripLayout() {
           </Link>
         </div>
 
+        {/* モード行は「切り替えられるとき」だけ出す。計画中は JOURNEY/MEMORY が
+            日付ロックで押しても進めず、sticky ヘッダーの高さだけを食っていた。
+            次に何が解禁されるかは Overview のカウントダウンが伝える。 */}
+        {unlockedModeCount >= 2 && (
         <nav className="mx-auto flex max-w-[1200px] gap-1 px-4 pb-2 pt-1">
           {modes.map((m) => {
             const isActive = m.id === active
@@ -134,6 +142,44 @@ export function TripLayout() {
             )
           })}
         </nav>
+        )}
+
+        {/* モード内のセクション。日常的に一番使う移動なので、常に出しておく */}
+        {sections.length > 0 && (
+          <nav
+            className={`mx-auto flex max-w-[1200px] gap-1 overflow-x-auto px-4 pb-1.5 ${
+              dark ? 'border-t border-white/8' : 'border-t border-black/6'
+            }`}
+          >
+            {sections.map((s) => {
+              const on = s.id === activeSection
+              return (
+                <Link
+                  key={s.id}
+                  to={s.path}
+                  aria-current={on ? 'page' : undefined}
+                  className={`tap relative inline-flex shrink-0 items-center justify-center px-3.5 text-[13px] transition duration-200 ease-passage ${
+                    on
+                      ? dark
+                        ? 'font-semibold text-text-porcelain'
+                        : 'font-semibold text-text-ink'
+                      : dark
+                        ? 'text-text-porcelain/45 hover:text-text-porcelain/75'
+                        : 'text-text-ink/45 hover:text-text-ink/75'
+                  }`}
+                >
+                  {s.label}
+                  {/* 選択中の下線。モードタブの THE THREAD と同じ「線で現在地を示す」扱い */}
+                  <span
+                    className={`absolute inset-x-3 bottom-1 h-0.5 rounded-full transition-opacity duration-200 ease-passage ${
+                      on ? 'bg-brass opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                </Link>
+              )
+            })}
+          </nav>
+        )}
       </header>
 
       <main key={active} className="anim-mode-switch">
