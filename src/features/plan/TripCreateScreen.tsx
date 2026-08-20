@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import type { ItineraryDay, Spot, TripContext, WindowCostEstimate } from '@/types'
+import type { Spot, TripContext, WindowCostEstimate } from '@/types'
 import { Button } from '@/components/common/Button'
 import { Chip } from '@/components/common/QuestChip'
 import { Thread } from '@/components/thread/Thread'
 import { CostTimingChart } from '@/components/plan/CostTimingChart'
-import { DraftItineraryReview } from '@/components/plan/DraftItineraryReview'
-import { aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
+import { SpotGrid } from '@/components/spots/SpotGrid'
+import { PACE_CAPACITY, aiAgent, buildDraftItinerary } from '@/lib/providers/mockAgent'
 import {
   COVER_PHOTOS,
   DESTINATION_PRESETS,
@@ -76,7 +76,6 @@ export function TripCreateScreen() {
 
   const [thinking, setThinking] = useState(false)
   const [proposals, setProposals] = useState<Spot[]>([])
-  const [draftItinerary, setDraftItinerary] = useState<ItineraryDay[] | null>(null)
 
   const dates = useMemo(
     () => (startDate && endDate && endDate >= startDate ? dateRange(startDate, endDate) : []),
@@ -111,32 +110,22 @@ export function TripCreateScreen() {
     setThinking(true)
     setStep(3)
     try {
-      // overshoot: ペースぴったりより多めに候補を取り、そのまま日に詰め込んでから
-      // 「取捨選択」できるようにする（1枚ずつ選んでから組み立てる方式はやめた）
+      // overshoot: ペースぴったりの件数だと選ぶ余地が無くなるので、候補は多めに出す
       const spots = await aiAgent.suggestSpots(
         { destination, startDate, endDate, interests, pace, companions },
         { overshoot: true },
       )
       setProposals(spots)
-      setDraftItinerary(spots.length ? buildDraftItinerary(spots, dates) : null)
     } finally {
       setThinking(false)
     }
   }
 
-  function removeDraftItem(dayId: string, itemId: string) {
-    setDraftItinerary((prev) =>
-      prev
-        ? prev.map((d) => (d.id === dayId ? { ...d, items: d.items.filter((i) => i.id !== itemId) } : d))
-        : prev,
-    )
-  }
+  /** ペースと日数から決まる「このくらいが気持ちいい」件数。選択中の目安に使う。 */
+  const recommendedCount = Math.max(1, PACE_CAPACITY[pace] * Math.max(1, dates.length))
 
-  /** AI が組み立てた旅程から、取捨選択で残った分だけで旅をつくる。 */
-  function finish() {
-    const itinerary = draftItinerary ?? []
-    const usedSpotIds = new Set(itinerary.flatMap((d) => d.items.map((i) => i.spotId)))
-    const picked = proposals.filter((s) => usedSpotIds.has(s.id))
+  /** 選んだスポットで旅をつくる。順番と時刻はここで AI が組み立てる。 */
+  function finish(picked: Spot[]) {
     const trip = createTrip({
       title: (title.trim() || destination).toUpperCase(),
       destination,
@@ -144,7 +133,7 @@ export function TripCreateScreen() {
       endDate,
       coverPhotoUrl: COVER_PHOTOS[destination] ?? picked[0]?.photoUrls[0] ?? FALLBACK_COVER,
       spots: picked,
-      itinerary: itinerary.length ? itinerary : undefined,
+      itinerary: picked.length ? buildDraftItinerary(picked, dates) : undefined,
     })
     navigate(`/trip/${trip.id}`, { replace: true })
   }
@@ -495,7 +484,7 @@ export function TripCreateScreen() {
             <section className="flex h-full flex-col">
               <p className="label-caps text-brass">STEP 04</p>
               <h1 className="font-display text-display-l mt-2">
-                {thinking ? 'AIが組み立てています' : 'AIが組み立てました'}
+                {thinking ? '候補を探しています' : '行きたい場所を選ぶ'}
               </h1>
 
               {thinking ? (
@@ -511,27 +500,26 @@ export function TripCreateScreen() {
                     {destination} / {dates.length} DAYS / {interests.join(' · ') || '指定なし'}
                   </p>
                 </div>
-              ) : !draftItinerary ? (
+              ) : proposals.length === 0 ? (
                 <>
                   <p className="mt-6 rounded-2xl border border-white/10 p-5 text-[14px] leading-relaxed text-text-porcelain/55">
                     この行き先の候補データはまだありません。空の旅程で作成して、スポットを手で足していきましょう。
                   </p>
-                  <Button variant="primary" className="mt-5" onClick={finish}>
+                  <Button variant="primary" className="mt-5" onClick={() => finish([])}>
                     空の旅程でつくる
                   </Button>
                 </>
               ) : (
                 <>
                   <p className="mt-2 text-[13px] leading-relaxed text-text-porcelain/55">
-                    候補を詰め込んで一旦組み立てました。多すぎる日は「外す」で減らしてください。
+                    タップして選ぶ。順番と時間はあとで AI が組み立てます。
                   </p>
                   <div className="mt-5 flex flex-1 flex-col">
-                    <DraftItineraryReview
-                      itinerary={draftItinerary}
+                    <SpotGrid
                       spots={proposals}
-                      pace={pace}
-                      onRemoveItem={removeDraftItem}
+                      recommended={recommendedCount}
                       onFinish={finish}
+                      finishLabel="この旅をつくる"
                     />
                   </div>
                 </>

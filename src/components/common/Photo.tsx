@@ -36,9 +36,10 @@ export function Photo({
     <div
       className={`relative overflow-hidden bg-chart ${className}`}
       style={{
+        // 通信が遅い/失敗した場面で画面が真っ黒に見えないよう、下地は暗くしすぎない
         backgroundImage: showImage
           ? undefined
-          : `linear-gradient(150deg, hsl(${hue} 22% 22%), hsl(${(hue + 40) % 360} 26% 13%))`,
+          : `linear-gradient(150deg, hsl(${hue} 24% 38%), hsl(${(hue + 40) % 360} 28% 24%))`,
       }}
     >
       {showImage && (
