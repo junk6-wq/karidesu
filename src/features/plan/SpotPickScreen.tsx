@@ -4,7 +4,7 @@ import type { Spot } from '@/types'
 import { useTrip, useTripsStore } from '@/store/tripsStore'
 import { SpotGrid } from '@/components/spots/SpotGrid'
 import { Thread } from '@/components/thread/Thread'
-import { aiAgent } from '@/lib/providers/mockAgent'
+import { PACE_CAPACITY, aiAgent } from '@/lib/providers/mockAgent'
 import { usePreferencesStore } from '@/store/preferencesStore'
 
 /**
@@ -50,6 +50,13 @@ export function SpotPickScreen() {
 
   if (!trip || !id) return <Navigate to="/" replace />
 
+  // すでに入っている件数を差し引いた「あと何件入れられるか」。
+  // 目安を超えたら SpotGrid が選択中に知らせてくれる。
+  const { travelStyle } = usePreferencesStore.getState().preferences
+  const capacity = PACE_CAPACITY[travelStyle.pace] * Math.max(1, trip.itinerary.length)
+  const currentCount = trip.itinerary.reduce((sum, d) => sum + d.items.length, 0)
+  const headroom = capacity - currentCount
+
   async function adopt(picked: Spot[]) {
     setBusy(true)
     addSpotsAndArrange(id!, picked.map((s) => ({ ...s, source: 'ai' as const, aiRecommended: true })))
@@ -90,6 +97,7 @@ export function SpotPickScreen() {
             <div className="mt-6 flex flex-1 flex-col">
               <SpotGrid
                 spots={candidates}
+                recommended={headroom >= 1 ? headroom : undefined}
                 onFinish={adopt}
                 finishLabel="旅程に入れる"
                 busy={busy}

@@ -85,6 +85,11 @@ interface TripsState {
   /** AI 提案をユーザーが承認した後に、旅程・予算へ一括反映する。 */
   applyProposal(tripId: string, proposal: AIProposal): void
   setSpotPriority(tripId: string, spotId: string, priority: SpotPriority | undefined): void
+  /**
+   * 予定 1 件の行き先を別の場所に差し替える。時間帯はそのまま引き継ぐ。
+   * 差し替え元が他の予定で使われていなければ、候補リストからも取り除く。
+   */
+  swapItemSpot(tripId: string, itemId: string, next: Omit<Spot, 'id'>): void
   /** 予定を複製し、同じ日の直後に少し後ろの時間で挿入する。 */
   duplicateItem(tripId: string, itemId: string): void
   moveItemUp(tripId: string, dayId: string, itemId: string): void
@@ -171,6 +176,28 @@ export const useTripsStore = create<TripsState>((set, get) => ({
     set({ trips: next })
     persist(next)
     return created
+  },
+
+  swapItemSpot(tripId, itemId, next) {
+    const created: Spot = { ...next, id: uid('spot') }
+    const trips = get().trips.map((t) => {
+      if (t.id !== tripId) return t
+      const previousSpotId = t.itinerary
+        .flatMap((d) => d.items)
+        .find((i) => i.id === itemId)?.spotId
+      if (!previousSpotId) return t
+
+      const itinerary = t.itinerary.map((d) => ({
+        ...d,
+        items: d.items.map((i) => (i.id === itemId ? { ...i, spotId: created.id } : i)),
+      }))
+      // 差し替え元がどの予定からも参照されなくなったら、候補からも外す
+      const stillUsed = itinerary.some((d) => d.items.some((i) => i.spotId === previousSpotId))
+      const spots = [...(stillUsed ? t.spots : t.spots.filter((s) => s.id !== previousSpotId)), created]
+      return touch({ ...t, spots, itinerary })
+    })
+    set({ trips })
+    persist(trips)
   },
 
   addSpotsAndArrange(tripId, spots) {
