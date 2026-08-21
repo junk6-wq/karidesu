@@ -1,6 +1,20 @@
 import type { ItineraryDay, Spot } from '@/types'
 import { Photo } from '@/components/common/Photo'
 import { formatDateDot, formatDuration, weekdayEn } from '@/lib/time'
+import { estimateDurationMin, haversineKm, pickTravelMode, TRAVEL_MODE_LABEL } from '@/lib/geo'
+
+/** 前日最後の予定から、その日最初の予定までの移動を見積もる（地方が変わる日だけ使う）。 */
+function moveNote(prevDay: ItineraryDay | undefined, day: ItineraryDay, spotById: Map<string, Spot>) {
+  const prevSpot = prevDay?.items.length
+    ? spotById.get(prevDay.items[prevDay.items.length - 1].spotId)
+    : undefined
+  const nextSpot = day.items.length ? spotById.get(day.items[0].spotId) : undefined
+  if (!prevSpot || !nextSpot) return null
+  const distanceKm = haversineKm(prevSpot.location, nextSpot.location)
+  const mode = pickTravelMode(distanceKm)
+  const durationMin = estimateDurationMin(distanceKm, mode)
+  return { mode, durationMin }
+}
 
 /**
  * AI が組み上げたモデルプランを、日ごとに一通り見せる画面。
@@ -14,12 +28,15 @@ import { formatDateDot, formatDuration, weekdayEn } from '@/lib/time'
 export function ModelPlanReview({
   itinerary,
   spots,
+  dayRegions,
   onSwapRequest,
   onFinish,
   busy = false,
 }: {
   itinerary: ItineraryDay[]
   spots: Spot[]
+  /** 複数地方をまたぐプランのとき、各 DAY がどの地方かを示す（単一地方なら未指定）。 */
+  dayRegions?: string[]
   onSwapRequest: (itemId: string, current: Spot) => void
   onFinish: () => void
   busy?: boolean
@@ -30,7 +47,13 @@ export function ModelPlanReview({
   return (
     <div className="flex flex-1 flex-col">
       <div className="space-y-7">
-        {itinerary.map((day, dayIndex) => (
+        {itinerary.map((day, dayIndex) => {
+          const region = dayRegions?.[dayIndex]
+          const prevRegion = dayIndex > 0 ? dayRegions?.[dayIndex - 1] : undefined
+          const isMoveDay = Boolean(region && prevRegion && region !== prevRegion)
+          const move = isMoveDay ? moveNote(itinerary[dayIndex - 1], day, spotById) : null
+
+          return (
           <section key={day.id}>
             <div className="flex items-baseline gap-2">
               <h2 className="mono-readout text-[13px] text-brass">
@@ -39,10 +62,26 @@ export function ModelPlanReview({
               <span className="mono-readout text-[11px] text-text-porcelain/45">
                 {formatDateDot(day.date)} {weekdayEn(day.date)}
               </span>
+              {region && (
+                <span className="label-caps rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-text-porcelain/60">
+                  {region}
+                </span>
+              )}
               <span className="mono-readout ml-auto text-[11px] text-text-porcelain/35">
                 {day.items.length} 件
               </span>
             </div>
+
+            {isMoveDay && (
+              <p className="mt-1.5 text-[12px] leading-relaxed text-brass/85">
+                {prevRegion} から {region} へ移動する日です。
+                {move && (
+                  <>
+                    　目安 {TRAVEL_MODE_LABEL[move.mode]}で約{formatDuration(move.durationMin)}
+                  </>
+                )}
+              </p>
+            )}
 
             {day.items.length === 0 ? (
               <p className="mt-2 text-[12px] text-text-porcelain/35">この日は空です。</p>
@@ -95,7 +134,8 @@ export function ModelPlanReview({
               </ul>
             )}
           </section>
-        ))}
+          )
+        })}
       </div>
 
       <button

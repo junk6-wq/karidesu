@@ -852,10 +852,24 @@ export const spotSeeds: Record<string, SpotSeed[]> = {
   ],
 }
 
-/** 行き先名から、その土地の種データを引く。部分一致で拾い、未登録なら全国から。 */
+/**
+ * 行き先名に含まれる登録済み地方名を、文中に現れる順ですべて拾う。
+ * 「東京と京都」のような複数地方をまたぐ行き先も、両方を旅程に反映できるようにする。
+ * どれとも一致しなければ空配列（＝この行き先の候補データはまだない）。
+ */
+export function regionsFor(destination: string): string[] {
+  return Object.keys(spotSeeds)
+    .filter((k) => destination.includes(k))
+    .sort((a, b) => destination.indexOf(a) - destination.indexOf(b))
+}
+
+/**
+ * 行き先名から、その土地の種データを引く。
+ * 一致した地方すべての候補を合わせて返す。未登録の行き先は、
+ * 別の地方のデータで埋めてしまうと事実と異なる提案になるため空を返す。
+ */
 export function poolFor(destination: string): SpotSeed[] {
-  const key = Object.keys(spotSeeds).find((k) => destination.includes(k))
-  return key ? spotSeeds[key] : Object.values(spotSeeds).flat()
+  return regionsFor(destination).flatMap((key) => spotSeeds[key])
 }
 
 /** 種データを、旅程に入れられる Spot に起こす。 */

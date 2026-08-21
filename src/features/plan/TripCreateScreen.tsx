@@ -13,10 +13,12 @@ import {
   DESTINATION_PRESETS,
   FALLBACK_COVER,
   INTEREST_TAGS,
+  regionsFor,
 } from '@/lib/providers/spotSeeds'
 import { suggestDestinations, type DestinationSuggestion } from '@/lib/destinationSuggest'
 import { suggestBestWindows } from '@/lib/seasonPricing'
 import { dateRange, toISODate } from '@/lib/time'
+import { uid } from '@/lib/id'
 import { useTripsStore } from '@/store/tripsStore'
 import { usePreferencesStore } from '@/store/preferencesStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -29,6 +31,24 @@ type Step = 0 | 1 | 2 | 3
  * 無くなるため、差し替え用にこの数だけ手元に残す。
  */
 const SWAP_RESERVE = 4
+
+/**
+ * 配列を parts 個以下の、なるべく均等な連続したかたまりに分ける（余りは前から順に）。
+ * 複数の地方をまたぐ行き先で、日程を地方ごとに割り振るのに使う。
+ */
+function splitContiguous<T>(arr: T[], parts: number): T[][] {
+  const n = Math.max(1, Math.min(parts, arr.length))
+  const base = Math.floor(arr.length / n)
+  const extra = arr.length % n
+  const out: T[][] = []
+  let cursor = 0
+  for (let i = 0; i < n; i++) {
+    const size = base + (i < extra ? 1 : 0)
+    out.push(arr.slice(cursor, cursor + size))
+    cursor += size
+  }
+  return out
+}
 
 const PACE_LABEL = {
   relaxed: { label: 'ゆっくり', note: '1 日 2 か所くらい' },
@@ -86,6 +106,8 @@ export function TripCreateScreen() {
   // モデルプランに登場しうるスポット（差し替えで増える分も含む）
   const [planSpots, setPlanSpots] = useState<Spot[]>([])
   const [modelPlan, setModelPlan] = useState<ItineraryDay[] | null>(null)
+  // 複数地方をまたぐ行き先のとき、各 DAY がどの地方かを示す（単一地方なら null）
+  const [dayRegions, setDayRegions] = useState<string[] | null>(null)
   const [swapTarget, setSwapTarget] = useState<{ itemId: string; current: Spot } | null>(null)
 
   const dates = useMemo(
@@ -120,21 +142,66 @@ export function TripCreateScreen() {
   /** ペースと日数から決まる、1 旅程に入れる件数の目安。 */
   const recommendedCount = Math.max(1, PACE_CAPACITY[pace] * Math.max(1, dates.length))
 
-  /** AI にモデルプランを丸ごと組み立ててもらう。 */
+  /**
+   * AI にモデルプランを丸ごと組み立ててもらう。
+   * 「東京と京都」のように複数の地方名が行き先に含まれるときは、日程をその地方の数だけ
+   * 連続したかたまりに分け、地方ごとに別々にスポットを選んで組む。1 つの DAY の中で
+   * 遠く離れた地方の予定が混ざる（＝現実的でない長距離移動が挟まる）のを防ぐため。
+   */
   async function askAgent() {
     setThinking(true)
     setStep(3)
     try {
-      // overshoot でその土地の候補を広く取り、そこからプラン分を切り出す
-      const spots = await aiAgent.suggestSpots(
-        { destination, startDate, endDate, interests, pace, companions },
-        { overshoot: true },
-      )
-      // 全部を使い切るとあとで差し替える先が無くなるので、必ず数件は残す
-      const planSize = Math.max(1, Math.min(recommendedCount, spots.length - SWAP_RESERVE))
-      const picked = spots.slice(0, planSize)
-      setPlanSpots(picked)
-      setModelPlan(picked.length ? buildDraftItinerary(picked, dates) : null)
+      const regions = regionsFor(destination)
+
+      if (regions.length > 1 && dates.length > 0) {
+        const dateGroups = splitContiguous(dates, regions.length)
+        const allSpots: Spot[] = []
+        const allDays: ItineraryDay[] = []
+        const regionOfDay: string[] = []
+
+        for (let i = 0; i < dateGroups.length; i++) {
+          const region = regions[i]
+          const regionDates = dateGroups[i]
+          const spots = await aiAgent.suggestSpots(
+            {
+              destination: region,
+              startDate: regionDates[0],
+              endDate: regionDates[regionDates.length - 1],
+              interests,
+              pace,
+              companions,
+            },
+            { overshoot: true },
+          )
+          const regionRecommended = Math.max(1, PACE_CAPACITY[pace] * regionDates.length)
+          const planSize = Math.max(1, Math.min(regionRecommended, spots.length - SWAP_RESERVE))
+          const picked = spots.slice(0, planSize)
+          allSpots.push(...picked)
+          allDays.push(
+            ...(picked.length
+              ? buildDraftItinerary(picked, regionDates)
+              : regionDates.map((date) => ({ id: uid('day'), date, items: [] }))),
+          )
+          regionOfDay.push(...regionDates.map(() => region))
+        }
+
+        setPlanSpots(allSpots)
+        setModelPlan(allDays.some((d) => d.items.length) ? allDays : null)
+        setDayRegions(allDays.some((d) => d.items.length) ? regionOfDay : null)
+      } else {
+        // overshoot でその土地の候補を広く取り、そこからプラン分を切り出す
+        const spots = await aiAgent.suggestSpots(
+          { destination, startDate, endDate, interests, pace, companions },
+          { overshoot: true },
+        )
+        // 全部を使い切るとあとで差し替える先が無くなるので、必ず数件は残す
+        const planSize = Math.max(1, Math.min(recommendedCount, spots.length - SWAP_RESERVE))
+        const picked = spots.slice(0, planSize)
+        setPlanSpots(picked)
+        setModelPlan(picked.length ? buildDraftItinerary(picked, dates) : null)
+        setDayRegions(null)
+      }
     } finally {
       setThinking(false)
     }
@@ -555,6 +622,7 @@ export function TripCreateScreen() {
                     <ModelPlanReview
                       itinerary={modelPlan}
                       spots={planSpots}
+                      dayRegions={dayRegions ?? undefined}
                       onSwapRequest={(itemId, current) => setSwapTarget({ itemId, current })}
                       onFinish={finish}
                     />
