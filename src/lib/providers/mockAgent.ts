@@ -14,7 +14,7 @@ import type {
   TripHealth,
 } from '@/types'
 import { uid } from '@/lib/id'
-import { estimateDurationMin, haversineKm } from '@/lib/geo'
+import { estimateDurationMin, haversineKm, pickTravelMode } from '@/lib/geo'
 import { addMinutes, formatDuration, toMinutes, weekdayJa } from '@/lib/time'
 import { poolFor, seedToSpot } from './spotSeeds'
 import { proposeItineraryChanges as buildProposals } from '@/lib/aiProposals'
@@ -108,7 +108,7 @@ export class MockAIAgentProvider implements AIAgentProvider {
         let travelToNext = item.travelToNext
         if (spot && nextSpot) {
           const distanceKm = haversineKm(spot.location, nextSpot.location)
-          const mode = travelToNext?.mode ?? (distanceKm > 3 ? 'car' : 'walk')
+          const mode = travelToNext?.mode ?? pickTravelMode(distanceKm)
           travelToNext = {
             mode,
             distanceKm: Number(distanceKm.toFixed(1)),

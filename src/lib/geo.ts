@@ -1,4 +1,4 @@
-import type { GeoPoint } from '@/types'
+import type { GeoPoint, TravelMode } from '@/types'
 
 const EARTH_RADIUS_KM = 6371
 
@@ -18,7 +18,8 @@ export function haversineKm(a: GeoPoint, b: GeoPoint): number {
 const SPEED_KMH: Record<string, number> = {
   walk: 4.5,
   car: 42,
-  train: 65,
+  // 新幹線を含む長距離利用を想定した実効速度（停車・乗り換え込みの平均）
+  train: 160,
   bus: 30,
   flight: 500,
   other: 35,
@@ -28,8 +29,29 @@ const SPEED_KMH: Record<string, number> = {
 export function estimateDurationMin(distanceKm: number, mode: string): number {
   const speed = SPEED_KMH[mode] ?? SPEED_KMH.other
   // 乗り換え・駐車・手前の徒歩などの固定オーバーヘッド
-  const overhead = mode === 'walk' ? 0 : mode === 'flight' ? 90 : 8
+  const overhead = mode === 'walk' ? 0 : mode === 'flight' ? 90 : mode === 'train' ? 15 : 8
   return Math.max(1, Math.round((distanceKm / speed) * 60 + overhead))
+}
+
+/**
+ * 距離から移動手段を推定する。県境・地方をまたぐような長距離が
+ * 「車で20時間」のような非現実的な表示にならないよう、電車・飛行機も候補に含める。
+ */
+export function pickTravelMode(distanceKm: number): TravelMode {
+  if (distanceKm <= 3) return 'walk'
+  if (distanceKm <= 60) return 'car'
+  if (distanceKm <= 500) return 'train'
+  return 'flight'
+}
+
+/** 移動手段の日本語ラベル。THE THREAD や旅程表示で共通して使う。 */
+export const TRAVEL_MODE_LABEL: Record<string, string> = {
+  walk: '徒歩',
+  car: '車',
+  train: '電車',
+  bus: 'バス',
+  flight: '飛行機',
+  other: '移動',
 }
 
 export function centroid(points: GeoPoint[]): GeoPoint {

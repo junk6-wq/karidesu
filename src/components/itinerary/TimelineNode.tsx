@@ -5,15 +5,7 @@ import { Photo } from '@/components/common/Photo'
 import { QuestChip } from '@/components/common/QuestChip'
 import { formatDuration, toMinutes } from '@/lib/time'
 import { formatKm } from '@/lib/format'
-
-const MODE_LABEL: Record<string, string> = {
-  walk: '徒歩',
-  car: '車',
-  train: '電車',
-  bus: 'バス',
-  flight: '飛行機',
-  other: '移動',
-}
+import { TRAVEL_MODE_LABEL as MODE_LABEL } from '@/lib/geo'
 
 const TYPE_LABEL: Record<ItineraryItem['type'], string> = {
   sightseeing: '観光',
