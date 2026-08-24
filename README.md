@@ -113,9 +113,10 @@ JOURNEY 中に電波が切れても画面は開く。旅のデータ自体は lo
 
 ## Claude Code 用スキル
 
-`.claude/skills/passage-ui/` に、この UI の決まり（3 幕構成・THE THREAD・Brass Gold の意味・
-画面追加時に触る 3 ファイル・共通部品の一覧）をまとめてある。
-Claude Code で画面や UI を触るときに自動で読まれる。
+| スキル | 中身 |
+| --- | --- |
+| `passage-ui` | この UI の決まり（3 幕構成・THE THREAD・Brass Gold の意味・画面追加時に触る 3 ファイル・共通部品の一覧）。画面や UI を触るときに自動で読まれる |
+| `find-skills` | 他のスキルを探して入れるためのスキル。[vercel-labs/skills](https://github.com/vercel-labs/skills) をそのまま置いたもので、`npx skills` CLI と https://skills.sh/ を使う |
 
 ## デプロイ
 
