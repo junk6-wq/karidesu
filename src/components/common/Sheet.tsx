@@ -1,5 +1,9 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+
+/** シート内のフォーカス可能な要素。DOM 順に拾う。 */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 /**
  * 下から出るシート。スポット詳細・編集など、遷移させたくない編集に使う。
@@ -21,13 +25,46 @@ export function BottomSheet({
   title?: ReactNode
   children: ReactNode
 }) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+
   useEffect(() => {
     if (!open) return
+
+    // 開く前にフォーカスがあった要素。閉じたらそこへ戻す。
+    // 戻さないと、シートを閉じたあとフォーカスが body に落ちて
+    // キーボード操作の現在地が失われる。
+    const opener = document.activeElement as HTMLElement | null
+    const panel = panelRef.current
+    panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      // シートの外へタブ移動できてしまうと、見えている内容と
+      // 操作している場所がずれる。前後の端で輪を閉じる。
+      if (e.key !== 'Tab' || !panel) return
+      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement
+      if (e.shiftKey && (active === first || !panel.contains(active))) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
+
     document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      opener?.focus?.()
+    }
   }, [open, onClose])
 
   if (!open) return null
@@ -40,13 +77,19 @@ export function BottomSheet({
         className="absolute inset-0 bg-ink/50 backdrop-blur-[2px] anim-fade"
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
-        className="anim-rise relative max-h-[88vh] w-full overflow-y-auto rounded-t-sheet bg-stone p-6 shadow-sheet sm:max-w-[560px] sm:rounded-sheet"
+        aria-labelledby={title ? titleId : undefined}
+        // overscroll-contain: シート内を下までスクロールしたあと指を動かし続けても
+        // 背後のページが動かないようにする（スクロール連鎖の遮断）。
+        className="anim-rise relative max-h-[88vh] w-full overflow-y-auto overscroll-contain rounded-t-sheet bg-stone p-6 shadow-sheet sm:max-w-[560px] sm:rounded-sheet"
       >
         {title && (
           <div className="mb-4 flex items-start justify-between gap-4">
-            <h2 className="font-display text-display-m">{title}</h2>
+            <h2 id={titleId} className="font-display text-display-m">
+              {title}
+            </h2>
             <button
               onClick={onClose}
               aria-label="閉じる"

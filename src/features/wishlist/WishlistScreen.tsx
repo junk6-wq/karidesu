@@ -114,7 +114,7 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="例: 金沢"
-          className="mt-1.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-1.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
         />
       </label>
 
@@ -148,7 +148,7 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
           onChange={(e) => setNotes(e.target.value)}
           placeholder="例: 友人がおすすめしていた"
           rows={2}
-          className="mt-1.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[13px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-1.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[13px] placeholder:text-text-ink/30 focus:border-brass"
         />
       </label>
 

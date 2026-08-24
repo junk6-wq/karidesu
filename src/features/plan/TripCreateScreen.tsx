@@ -243,7 +243,7 @@ export function TripCreateScreen() {
   }
 
   return (
-    <div className="min-h-dvh bg-ink text-text-porcelain">
+    <div className="scheme-dark min-h-dvh bg-ink text-text-porcelain">
       <div className="mx-auto flex min-h-dvh max-w-[720px] flex-col px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(24px,env(safe-area-inset-top))]">
         <header className="flex items-center justify-between">
           <button
@@ -271,10 +271,12 @@ export function TripCreateScreen() {
               </p>
 
               <input
+                aria-label="行き先"
+                autoComplete="off"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="例: 北海道"
-                className="mt-7 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-[18px] outline-none placeholder:text-text-porcelain/30 focus:border-brass"
+                className="mt-7 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-[18px] placeholder:text-text-porcelain/30 focus:border-brass"
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -354,7 +356,7 @@ export function TripCreateScreen() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={destination ? destination.toUpperCase() : 'HOKKAIDO'}
-                  className="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 font-display text-[22px] outline-none placeholder:text-text-porcelain/25 focus:border-brass"
+                  className="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 font-display text-[22px] placeholder:text-text-porcelain/25 focus:border-brass"
                 />
               </label>
             </section>
@@ -399,7 +401,7 @@ export function TripCreateScreen() {
                         setStartDate(e.target.value)
                         if (endDate < e.target.value) setEndDate(e.target.value)
                       }}
-                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 focus:border-brass"
                     />
                   </label>
                   <label className="block">
@@ -409,7 +411,7 @@ export function TripCreateScreen() {
                       value={endDate}
                       min={startDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                      className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 focus:border-brass"
                     />
                   </label>
                 </div>
@@ -430,7 +432,7 @@ export function TripCreateScreen() {
                           setEarliestStart(e.target.value)
                           setEstimates(null)
                         }}
-                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 focus:border-brass"
                       />
                     </label>
                     <label className="block">
@@ -443,13 +445,17 @@ export function TripCreateScreen() {
                           setLatestEnd(e.target.value)
                           setEstimates(null)
                         }}
-                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 outline-none focus:border-brass"
+                        className="mono-readout mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 focus:border-brass"
                       />
                     </label>
                   </div>
 
-                  <label className="mt-6 block">
-                    <span className="label-caps text-text-porcelain/50">何泊する？</span>
+                  {/* label ではなく group。中身はボタンと表示だけで入力要素が無く、
+                      label にしても何も結び付かない。 */}
+                  <div role="group" aria-labelledby="flex-nights-label" className="mt-6 block">
+                    <span id="flex-nights-label" className="label-caps text-text-porcelain/50">
+                      何泊する？
+                    </span>
                     <div className="mt-2 flex items-center gap-3">
                       <Button
                         tone="dark"
@@ -461,7 +467,7 @@ export function TripCreateScreen() {
                       >
                         −
                       </Button>
-                      <span className="mono-readout w-14 text-center text-[20px]">
+                      <span aria-live="polite" className="mono-readout w-14 text-center text-[20px]">
                         {flexNights} 泊
                       </span>
                       <Button
@@ -475,7 +481,7 @@ export function TripCreateScreen() {
                         ＋
                       </Button>
                     </div>
-                  </label>
+                  </div>
 
                   <Button
                     variant="primary"
@@ -514,8 +520,10 @@ export function TripCreateScreen() {
                 {dates.length > 0 ? `${dates.length} DAYS` : '日付を確認してください'}
               </p>
 
-              <label className="mt-9 block">
-                <span className="label-caps text-text-porcelain/50">人数</span>
+              <div role="group" aria-labelledby="companions-label" className="mt-9 block">
+                <span id="companions-label" className="label-caps text-text-porcelain/50">
+                  人数
+                </span>
                 <div className="mt-2 flex items-center gap-3">
                   <Button
                     tone="dark"
@@ -524,7 +532,9 @@ export function TripCreateScreen() {
                   >
                     −
                   </Button>
-                  <span className="mono-readout w-10 text-center text-[20px]">{companions}</span>
+                  <span aria-live="polite" className="mono-readout w-10 text-center text-[20px]">
+                    {companions}
+                  </span>
                   <Button
                     tone="dark"
                     onClick={() => setCompanions(companions + 1)}
@@ -533,7 +543,7 @@ export function TripCreateScreen() {
                     ＋
                   </Button>
                 </div>
-              </label>
+              </div>
             </section>
           )}
 

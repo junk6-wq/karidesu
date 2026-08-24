@@ -71,7 +71,9 @@ export function TripLayout() {
 
   return (
     <div
-      className={`min-h-dvh ${dark ? 'bg-ink text-text-porcelain' : 'bg-stone text-text-ink'}`}
+      className={`min-h-dvh ${
+        dark ? 'scheme-dark bg-ink text-text-porcelain' : 'bg-stone text-text-ink'
+      }`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -205,7 +207,13 @@ export function TripLayout() {
 
 function LockedToast({ note }: { note: string }) {
   return (
-    <div className="anim-slide-down pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-5">
+    // 解禁条件は画面のどこにも残らず消えるので、読み上げにも同じ内容を流す。
+    // assertive ではなく polite: 操作を遮るほどの緊急性はない。
+    <div
+      role="status"
+      aria-live="polite"
+      className="anim-slide-down pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-5"
+    >
       <div className="flex items-center gap-3 rounded-full border border-white/12 bg-ink/95 px-4 py-2.5 text-[13px] text-text-porcelain shadow-sheet">
         <span className="w-8 text-text-porcelain/40">
           <Thread variant="locked" />

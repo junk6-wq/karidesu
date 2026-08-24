@@ -121,12 +121,18 @@ export function AddSpotSheet({
 
       {tab === 'search' && (
         <div className="mt-5">
+          {/* autoFocus は外した。スマートフォンでシートが開いた瞬間にキーボードが
+              せり上がり、下に並ぶ検索結果が隠れて何も選べない状態になっていた。
+              Sheet 側が開いたときに先頭要素へフォーカスを移すので、
+              キーボード操作でも自力で辿り着ける。 */}
           <input
-            autoFocus
+            type="search"
+            aria-label="スポットを検索"
+            autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="場所やカテゴリで検索"
-            className="w-full rounded-xl border border-black/12 bg-white px-4 py-3 outline-none placeholder:text-text-ink/30 focus:border-brass"
+            className="w-full rounded-xl border border-black/12 bg-white px-4 py-3 placeholder:text-text-ink/30 focus:border-brass"
           />
           <ul className="mt-4 space-y-2">
             {results.map((r) => (
@@ -165,11 +171,11 @@ export function AddSpotSheet({
         <div className="mt-5 space-y-4">
           <Field label="名前">
             <input
-              autoFocus
+              autoComplete="off"
               value={manual.name}
               onChange={(e) => setManual({ ...manual, name: e.target.value })}
               placeholder="例: 祖母の家"
-              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none focus:border-brass"
+              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 focus:border-brass"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -177,7 +183,7 @@ export function AddSpotSheet({
               <input
                 value={manual.category}
                 onChange={(e) => setManual({ ...manual, category: e.target.value })}
-                className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none focus:border-brass"
+                className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 focus:border-brass"
               />
             </Field>
             <Field label="滞在（分）">
@@ -186,7 +192,7 @@ export function AddSpotSheet({
                 inputMode="numeric"
                 value={manual.stay}
                 onChange={(e) => setManual({ ...manual, stay: Number(e.target.value) || 0 })}
-                className="mono-readout w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none focus:border-brass"
+                className="mono-readout w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 focus:border-brass"
               />
             </Field>
           </div>
@@ -195,7 +201,7 @@ export function AddSpotSheet({
               value={manual.hours}
               onChange={(e) => setManual({ ...manual, hours: e.target.value })}
               placeholder="09:00–17:00"
-              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none placeholder:text-text-ink/30 focus:border-brass"
+              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 placeholder:text-text-ink/30 focus:border-brass"
             />
           </Field>
           <Button variant="primary" className="w-full" onClick={addManual}>

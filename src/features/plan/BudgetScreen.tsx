@@ -136,7 +136,7 @@ function MoneyInput({
           value={value === 0 ? '' : value}
           placeholder="0"
           onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-          className={`mono-readout w-full bg-transparent text-right outline-none ${
+          className={`mono-readout w-full bg-transparent text-right ${
             tone === 'over' ? 'text-brick' : ''
           }`}
         />
