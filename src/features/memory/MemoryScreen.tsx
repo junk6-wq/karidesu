@@ -206,10 +206,11 @@ export function MemoryScreen() {
           {editing && (
             <>
               <textarea
+                aria-label="旅行記の本文"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 rows={14}
-                className="mt-4 w-full resize-y rounded-xl border border-white/15 bg-white/5 p-4 text-[14px] leading-[1.9] outline-none focus:border-brass"
+                className="mt-4 w-full resize-y rounded-xl border border-white/15 bg-white/5 p-4 text-[14px] leading-[1.9] focus:border-brass"
               />
               <div className="mt-3 flex gap-2">
                 <Button

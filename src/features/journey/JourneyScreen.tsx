@@ -101,7 +101,7 @@ export function JourneyScreen() {
   const dayComplete = !ctx.nextItem
 
   return (
-    <div className="relative min-h-dvh bg-ink text-text-porcelain">
+    <div className="scheme-dark relative min-h-dvh bg-ink text-text-porcelain">
       {/* 背景写真は雰囲気づけ程度に留め、読みやすさを優先して濃いオーバーレイをかける */}
       <Photo
         src={ctx.nextSpot?.photoUrls[0]}

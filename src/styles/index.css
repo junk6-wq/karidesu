@@ -7,6 +7,8 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* 既定は明るい画面（Home / PLAN）。暗い画面は .scheme-dark で切り替える。 */
+    color-scheme: light;
   }
 
   body {
@@ -18,24 +20,58 @@
     overscroll-behavior-y: none;
   }
 
-  /* 16.3: フォーカスリングは常時視認可能に */
+  /* 16.3: フォーカスリングは常時視認可能に。
+     border-radius はここで指定しない。角丸の入力欄（rounded-2xl 等）に当たると
+     フォーカスした瞬間だけ角が 4px に潰れる。outline は要素自身の角丸に沿うので、
+     指定しない方が見た目が揃う。 */
   :focus-visible {
     outline: 2px solid var(--c-brass-gold);
     outline-offset: 2px;
-    border-radius: 4px;
   }
 
   button {
     font: inherit;
     color: inherit;
   }
+
+  /* モバイルで押した瞬間に出る OS 既定の青いハイライトを、
+     このアプリのトーン（Brass Gold の淡い残光）に置き換える。 */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    -webkit-tap-highlight-color: rgba(198, 161, 91, 0.18);
+  }
 }
 
 @layer components {
-  /* 16.3: タッチターゲット最小 44px */
+  /* 16.3: タッチターゲット最小 44px。
+     touch-action: manipulation はダブルタップズームの待ち時間（約 300ms）を
+     消す。旅程の並べ替えや Journey の操作バーなど、連続して押す場面で
+     反応が遅れて見えていた。 */
   .tap {
     min-height: 44px;
     min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* 暗い画面（Ink Navy 地）に置く。ネイティブ UI をダーク側に寄せるための宣言で、
+     これが無いと type="date" のカレンダーやスクロールバーだけ白いまま浮く。 */
+  .scheme-dark {
+    color-scheme: dark;
+  }
+
+  /* 入力欄の共通スタイル。角丸や幅は各画面で足す。
+     フォーカスは :focus-visible のリング（グローバル）に任せ、
+     枠線の色替えはキーボード操作以外でも分かる補助として残す。 */
+  .field {
+    transition: border-color var(--d-fast) var(--e-passage);
+  }
+
+  .field:focus {
+    border-color: var(--c-brass-gold);
   }
 
   .mono-readout {

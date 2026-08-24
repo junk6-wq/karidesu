@@ -146,6 +146,7 @@ export function SpotDetailSheet({
         <input
           type="number"
           inputMode="numeric"
+          aria-label="費用（円）"
           value={item.cost ?? ''}
           placeholder="0"
           onChange={(e) =>
@@ -153,14 +154,14 @@ export function SpotDetailSheet({
               cost: e.target.value === '' ? undefined : Number(e.target.value),
             })
           }
-          className="mono-readout w-32 rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none focus:border-brass"
+          className="mono-readout w-32 rounded-xl border border-black/12 bg-white px-3 py-2.5 focus:border-brass"
         />
         <select
           value={item.costCategory ?? 'activity'}
           onChange={(e) =>
             updateItem(tripId, itemId, { costCategory: e.target.value as BudgetCategory })
           }
-          className="rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] outline-none focus:border-brass"
+          className="rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] focus:border-brass"
         >
           {BUDGET_ORDER.map((c) => (
             <option key={c} value={c}>
@@ -177,7 +178,7 @@ export function SpotDetailSheet({
           onChange={(e) => updateItem(tripId, itemId, { notes: e.target.value })}
           rows={3}
           placeholder="予約番号、駐車場、持ち物など"
-          className="mt-2 w-full resize-none rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2 w-full resize-none rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
         />
       </label>
 
@@ -282,7 +283,7 @@ function TimeField({
         type="time"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mono-readout mt-2 w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 outline-none focus:border-brass"
+        className="mono-readout mt-2 w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 focus:border-brass"
       />
     </label>
   )

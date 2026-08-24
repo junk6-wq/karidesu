@@ -92,13 +92,15 @@ function TripCompanions({ trip }: { trip: Trip }) {
 
       <div className="mt-3 flex items-center gap-2">
         <input
+          aria-label="同行者の名前"
+          autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') submit()
           }}
           placeholder="同行者の名前"
-          className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
         />
         <button
           onClick={submit}

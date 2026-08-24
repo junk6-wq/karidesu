@@ -65,7 +65,7 @@ export function SpotPickScreen() {
   }
 
   return (
-    <div className="min-h-dvh bg-ink text-text-porcelain">
+    <div className="scheme-dark min-h-dvh bg-ink text-text-porcelain">
       <div className="mx-auto flex min-h-dvh max-w-[720px] flex-col px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(24px,env(safe-area-inset-top))]">
         <header className="flex items-center justify-between">
           <button

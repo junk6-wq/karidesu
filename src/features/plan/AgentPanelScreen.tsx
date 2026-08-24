@@ -193,16 +193,20 @@ export function AgentPanelScreen() {
 
       {/* 自然言語での編集リクエスト */}
       <div className="anim-rise mt-6 rounded-2xl border border-black/8 bg-white/75 p-4">
-        <label className="label-caps text-text-ink/40">AI に伝える</label>
+        <label htmlFor="agent-nl-input" className="label-caps text-text-ink/40">
+          AI に伝える
+        </label>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <input
+            id="agent-nl-input"
+            autoComplete="off"
             value={nlText}
             onChange={(e) => setNlText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') void submitNaturalLanguage(nlText)
             }}
             placeholder="例: 2日目をもう少しゆっくりにして"
-            className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+            className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
           />
           <Button
             variant="primary"
@@ -308,9 +312,17 @@ export function AgentPanelScreen() {
         </AgentBubble>
       ))}
 
+      {/* AI の返答は非同期に増えるだけで、画面上のどこにも遷移が起きない。
+          進行中と完了を読み上げに流さないと、待っているのか終わったのか分からない。 */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {busy || nlBusy || agentBusy ? 'AI が考えています' : ''}
+      </div>
+
       {(busy || nlBusy || agentBusy) && (
         <AgentBubble>
-          <span className="mono-readout text-[12px] text-text-ink/45">考えています…</span>
+          <span className="mono-readout text-[12px] text-text-ink/45" aria-hidden="true">
+            考えています…
+          </span>
         </AgentBubble>
       )}
 

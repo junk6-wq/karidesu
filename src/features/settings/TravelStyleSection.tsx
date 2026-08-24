@@ -49,7 +49,7 @@ export function TravelStyleSection() {
           value={travelStyle.departure}
           onChange={(e) => updateTravelStyle({ departure: e.target.value })}
           placeholder="例: 水戸"
-          className="mt-2.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[15px] outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[15px] placeholder:text-text-ink/30 focus:border-brass"
         />
       </label>
 
@@ -126,7 +126,7 @@ export function TravelStyleSection() {
           onChange={(e) => updateTravelStyle({ freeNotes: e.target.value })}
           rows={3}
           placeholder="例: 温泉と景色を重視。車移動で1日の運転は4時間以内。予定は詰め込みすぎない。"
-          className="mt-2.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] leading-relaxed outline-none placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] leading-relaxed placeholder:text-text-ink/30 focus:border-brass"
         />
       </label>
     </SettingsSection>
