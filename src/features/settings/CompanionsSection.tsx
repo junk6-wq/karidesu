@@ -24,7 +24,7 @@ export function CompanionsSection() {
         <TripCompanions key={trip.id} trip={trip} />
       ))}
       {ordered.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-black/15 p-4 text-[13px] text-text-ink/45">
+        <p className="rounded-2xl border border-dashed border-black/15 p-4 text-[13px] text-text-ink/65">
           まだ旅がありません。旅をつくると、ここで同行者を管理できます。
         </p>
       )}
@@ -50,7 +50,7 @@ function TripCompanions({ trip }: { trip: Trip }) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="font-display text-[17px]">{trip.title}</span>
-        <span className="mono-readout text-[11px] text-text-ink/40">
+        <span className="mono-readout text-[11px] text-text-ink/65">
           {formatDateRange(trip.startDate, trip.endDate)}
         </span>
       </div>
@@ -70,7 +70,7 @@ function TripCompanions({ trip }: { trip: Trip }) {
                 className={`tap rounded-full border px-2.5 py-1 text-[11px] transition duration-200 ease-passage ${
                   c.role === 'organizer'
                     ? 'border-brass bg-brass/15 text-[#7a5f2b]'
-                    : 'border-black/12 text-text-ink/50 hover:border-black/25'
+                    : 'border-black/12 text-text-ink/65 hover:border-black/25'
                 }`}
               >
                 幹事{c.role === 'organizer' ? '中' : 'にする'}
@@ -78,7 +78,7 @@ function TripCompanions({ trip }: { trip: Trip }) {
               <button
                 onClick={() => removeCompanion(trip.id, c.id)}
                 aria-label={`${c.name}を削除`}
-                className="tap flex h-8 w-8 items-center justify-center rounded-full text-text-ink/35 hover:bg-brick/10 hover:text-brick"
+                className="tap flex h-8 w-8 items-center justify-center rounded-full text-text-ink/65 hover:bg-brick/10 hover:text-brick"
               >
                 ✕
               </button>
@@ -86,7 +86,7 @@ function TripCompanions({ trip }: { trip: Trip }) {
           </li>
         ))}
         {trip.companions.length === 0 && (
-          <li className="text-[12px] text-text-ink/40">同行者がまだいません。</li>
+          <li className="text-[12px] text-text-ink/65">同行者がまだいません。</li>
         )}
       </ul>
 
@@ -100,12 +100,12 @@ function TripCompanions({ trip }: { trip: Trip }) {
             if (e.key === 'Enter') submit()
           }}
           placeholder="同行者の名前"
-          className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
+          className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/65 focus:border-brass"
         />
         <button
           onClick={submit}
           disabled={!name.trim()}
-          className="tap shrink-0 rounded-xl border border-dashed border-black/20 px-3.5 text-[13px] text-text-ink/60 transition duration-200 ease-passage hover:border-brass disabled:opacity-40"
+          className="tap shrink-0 rounded-xl border border-dashed border-black/20 px-3.5 text-[13px] text-text-ink/65 transition duration-200 ease-passage hover:border-brass disabled:opacity-40"
         >
           ＋ 追加
         </button>

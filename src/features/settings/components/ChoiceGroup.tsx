@@ -22,7 +22,7 @@ export function ChoiceGroup<T extends string>({
   return (
     <div className="rounded-2xl border border-black/8 bg-white/70 p-4">
       <span className="text-[14px] font-semibold text-text-ink">{label}</span>
-      {hint && <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/45">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/65">{hint}</p>}
       <div className={`mt-2.5 flex gap-2 ${multiline ? 'flex-wrap' : 'flex-wrap sm:flex-nowrap'}`}>
         {options.map((opt) => (
           <Chip key={opt.value} active={value === opt.value} onClick={() => onChange(opt.value)}>
@@ -53,7 +53,7 @@ export function MultiChoiceGroup({
   return (
     <div className="rounded-2xl border border-black/8 bg-white/70 p-4">
       <span className="text-[14px] font-semibold text-text-ink">{label}</span>
-      {hint && <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/45">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/65">{hint}</p>}
       <div className="mt-2.5 flex flex-wrap gap-2">
         {options.map((opt) => (
           <Chip key={opt} active={values.includes(opt)} onClick={() => onToggle(opt)}>

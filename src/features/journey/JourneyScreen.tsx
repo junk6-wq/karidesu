@@ -122,15 +122,19 @@ export function JourneyScreen() {
           >
             ← PLAN
           </Link>
-          <span className="mono-readout text-[11px] text-text-porcelain/45">
-            DAY {ctx.doneCount + (ctx.nextItem ? 1 : 0)} / {ctx.todayItems.length} · {nowHHMM()}
+          {/* ここは「今日が旅の何日目か」。以前は今日の何件目かを DAY と呼んでいて、
+              全日程画面の DAY 番号（旅の通し日数）と食い違っていた。
+              件数の進み具合はすぐ下の THE THREAD が「N / M DONE」で示す。 */}
+          <span className="mono-readout text-[11px] text-text-porcelain/55">
+            {ctx.dayNumber ? `DAY ${String(ctx.dayNumber).padStart(2, '0')} / ${ctx.dayCount}` : ''}{' '}
+            · {nowHHMM()}
           </span>
         </header>
 
         {/* 進捗: これも常時見える位置に固定気味に置く */}
         <div className="px-5 pt-4">
           <Thread variant="journey" progress={progress} status={status} showHead />
-          <div className="mono-readout mt-2.5 flex items-center justify-between text-[11px] text-text-porcelain/45">
+          <div className="mono-readout mt-2.5 flex items-center justify-between text-[11px] text-text-porcelain/55">
             <span>
               {ctx.doneCount} / {ctx.todayItems.length} DONE
             </span>
@@ -165,7 +169,7 @@ export function JourneyScreen() {
         {/* 今日の予定: 常時展開。「次の予定しか見えない」を解消する本体 */}
         <div className="flex-1 px-5 pb-6">
           <div className="rounded-card border border-white/10 bg-white/[0.04] p-4">
-            <p className="label-caps text-text-porcelain/45">今日の予定</p>
+            <p className="label-caps text-text-porcelain/55">今日の予定</p>
             {ctx.todayItems.length > 0 ? (
               <TodayTimeline
                 items={ctx.todayItems}
@@ -174,7 +178,7 @@ export function JourneyScreen() {
                 className="mt-3"
               />
             ) : (
-              <p className="mt-2 text-[13px] text-text-porcelain/50">今日の予定はありません。</p>
+              <p className="mt-2 text-[13px] text-text-porcelain/55">今日の予定はありません。</p>
             )}
           </div>
 

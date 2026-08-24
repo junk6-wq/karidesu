@@ -48,7 +48,7 @@ export function NextCard({
   if (!spot) {
     return (
       <div className="anim-fade rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center">
-        <p className="label-caps text-text-porcelain/40">NEXT</p>
+        <p className="label-caps text-text-porcelain/55">NEXT</p>
         <p className="font-display text-display-m mt-2">今日の予定は以上です</p>
       </div>
     )
@@ -64,7 +64,7 @@ export function NextCard({
 
         {/* WHERE: 現在地からの距離・移動手段 */}
         {(etaMin !== undefined || distanceKm !== undefined) && (
-          <p className="mono-readout mt-2 text-[12px] text-text-porcelain/50">
+          <p className="mono-readout mt-2 text-[12px] text-text-porcelain/55">
             現在地 → 目的地
             {distanceKm !== undefined && <span className="ml-2">{formatKm(distanceKm)}</span>}
           </p>
@@ -73,14 +73,14 @@ export function NextCard({
         {/* WHEN: 到着予定を最大の数字で見せる */}
         <div className="mt-4 flex items-center justify-center gap-6">
           <div>
-            <p className="label-caps text-text-porcelain/35">到着予定</p>
+            <p className="label-caps text-text-porcelain/55">到着予定</p>
             <p className="mono-readout mt-1 text-[32px] leading-none text-text-porcelain">
               {plannedArrival ?? '--:--'}
             </p>
           </div>
           {etaMin !== undefined && (
             <div>
-              <p className="label-caps text-text-porcelain/35">🚗 移動</p>
+              <p className="label-caps text-text-porcelain/55">🚗 移動</p>
               <p className="mono-readout mt-1 text-[32px] leading-none" style={{ color }}>
                 {formatDuration(etaMin)}
               </p>
@@ -90,7 +90,7 @@ export function NextCard({
 
         {/* 予定 vs 現在の見込み。旅程と現在地を1つの数字比較で融合させる */}
         {estimatedArrival && estimatedArrival !== plannedArrival && (
-          <p className="mono-readout mt-2 text-[11px] text-text-porcelain/40">
+          <p className="mono-readout mt-2 text-[11px] text-text-porcelain/55">
             今から向かうと見込み <span style={{ color }}>{estimatedArrival}</span> 到着
           </p>
         )}

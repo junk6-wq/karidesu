@@ -58,7 +58,7 @@ export function SpotSwapSheet({
           ))}
         </div>
       ) : options.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-black/15 p-5 text-center text-[13px] text-text-ink/50">
+        <p className="rounded-2xl border border-dashed border-black/15 p-5 text-center text-[13px] text-text-ink/65">
           この行き先には、ほかに出せる候補がありません。
         </p>
       ) : (
@@ -80,7 +80,7 @@ export function SpotSwapSheet({
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-semibold">{spot.name}</span>
-                  <span className="mono-readout mt-1 block text-[11px] text-text-ink/45">
+                  <span className="mono-readout mt-1 block text-[11px] text-text-ink/65">
                     {spot.category} · {formatDuration(spot.estimatedStayMin ?? 60)}
                   </span>
                 </span>
@@ -97,7 +97,7 @@ export function SpotSwapSheet({
             onRemove()
             onClose()
           }}
-          className="tap mt-4 w-full rounded-xl text-[13px] text-text-ink/45 hover:bg-black/[0.04] hover:text-brick"
+          className="tap mt-4 w-full rounded-xl text-[13px] text-text-ink/65 hover:bg-black/[0.04] hover:text-brick"
         >
           差し替えずに、この予定を外す
         </button>

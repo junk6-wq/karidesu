@@ -49,7 +49,7 @@ export function SpotsScreen() {
     <div className="mx-auto max-w-[1000px] px-5 pb-24 pt-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="label-caps text-text-ink/45">SPOTS &amp; WISHLIST</p>
+          <p className="label-caps text-text-ink/65">SPOTS &amp; WISHLIST</p>
           <h1 className="font-display text-display-m mt-1">行きたい場所</h1>
         </div>
         <Button variant="primary" onClick={() => setAdding(true)}>
@@ -94,7 +94,7 @@ export function SpotsScreen() {
             </Photo>
             <div className="p-4">
               <h2 className="truncate text-[16px] font-semibold">{spot.name}</h2>
-              <p className="mono-readout mt-1 text-[11px] text-text-ink/45">
+              <p className="mono-readout mt-1 text-[11px] text-text-ink/65">
                 {spot.category} · {formatDuration(spot.estimatedStayMin ?? 60)}
                 {spot.openingHours ? ` · ${spot.openingHours}` : ''}
               </p>
@@ -109,7 +109,7 @@ export function SpotsScreen() {
                       className={`tap label-caps rounded-full border px-2.5 py-1 text-[10px] transition duration-200 ease-passage ${
                         active
                           ? PRIORITY_ACTIVE_STYLE[opt.value]
-                          : 'border-black/12 text-text-ink/45 hover:border-black/25'
+                          : 'border-black/12 text-text-ink/65 hover:border-black/25'
                       }`}
                     >
                       {opt.label}
@@ -120,7 +120,7 @@ export function SpotsScreen() {
 
               <button
                 onClick={() => removeSpot(id, spot.id)}
-                className="tap mt-3 text-[12px] text-text-ink/40 hover:text-brick"
+                className="tap mt-3 text-[12px] text-text-ink/65 hover:text-brick"
               >
                 削除
               </button>
@@ -130,7 +130,7 @@ export function SpotsScreen() {
       </div>
 
       {spots.length === 0 && (
-        <p className="mt-10 rounded-card border border-dashed border-black/15 p-8 text-center text-[13px] text-text-ink/45">
+        <p className="mt-10 rounded-card border border-dashed border-black/15 p-8 text-center text-[13px] text-text-ink/65">
           該当するスポットがありません。
         </p>
       )}

@@ -112,7 +112,7 @@ export function SpotDetailSheet({
         />
       </div>
 
-      <p className="label-caps mt-6 text-text-ink/45">種類</p>
+      <p className="label-caps mt-6 text-text-ink/65">種類</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {TYPES.map((t) => (
           <Chip
@@ -125,7 +125,7 @@ export function SpotDetailSheet({
         ))}
       </div>
 
-      <p className="label-caps mt-6 text-text-ink/45">日を移す</p>
+      <p className="label-caps mt-6 text-text-ink/65">日を移す</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {trip.itinerary.map((d, i) => (
           <Chip
@@ -141,7 +141,7 @@ export function SpotDetailSheet({
         ))}
       </div>
 
-      <p className="label-caps mt-6 text-text-ink/45">費用</p>
+      <p className="label-caps mt-6 text-text-ink/65">費用</p>
       <div className="mt-2 flex items-center gap-2">
         <input
           type="number"
@@ -172,13 +172,13 @@ export function SpotDetailSheet({
       </div>
 
       <label className="mt-6 block">
-        <span className="label-caps text-text-ink/45">メモ</span>
+        <span className="label-caps text-text-ink/65">メモ</span>
         <textarea
           value={item.notes ?? ''}
           onChange={(e) => updateItem(tripId, itemId, { notes: e.target.value })}
           rows={3}
           placeholder="予約番号、駐車場、持ち物など"
-          className="mt-2 w-full resize-none rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2 w-full resize-none rounded-xl border border-black/12 bg-white px-3 py-2.5 text-[14px] placeholder:text-text-ink/65 focus:border-brass"
         />
       </label>
 
@@ -233,7 +233,7 @@ export function SpotDetailSheet({
                     <span className="block truncate text-[14px] font-semibold">
                       {alt.seed.name}
                     </span>
-                    <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/45">
+                    <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/65">
                       {alt.seed.category} · {formatKm(alt.km)}
                     </span>
                   </span>
@@ -247,7 +247,7 @@ export function SpotDetailSheet({
 
       <div className="mt-7 flex items-center justify-between gap-3">
         {item.cost ? (
-          <span className="mono-readout text-[13px] text-text-ink/50">
+          <span className="mono-readout text-[13px] text-text-ink/65">
             {formatCurrency(item.cost, trip.budget.currency)}
           </span>
         ) : (
@@ -278,7 +278,7 @@ function TimeField({
 }) {
   return (
     <label className="block">
-      <span className="label-caps text-text-ink/45">{label}</span>
+      <span className="label-caps text-text-ink/65">{label}</span>
       <input
         type="time"
         value={value}
@@ -292,7 +292,7 @@ function TimeField({
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="label-caps text-text-ink/40">{label}</dt>
+      <dt className="label-caps text-text-ink/65">{label}</dt>
       <dd className="mt-0.5 truncate">{value}</dd>
     </div>
   )

@@ -16,6 +16,10 @@ export interface JourneyContext {
   nextItem?: ItineraryItem
   nextSpot?: Spot
   todayItems: ItineraryItem[]
+  /** 今日が旅の何日目か（1 始まり）。見つからなければ undefined */
+  dayNumber?: number
+  /** 旅の総日数 */
+  dayCount: number
   /** 今日の予定のうち到着済みの数 */
   doneCount: number
   /** 次の目的地までの推定移動時間（分, 現在地不明なら undefined） */
@@ -179,6 +183,8 @@ export function buildContext(
     nextItem,
     nextSpot,
     todayItems,
+    dayNumber: today ? trip.itinerary.indexOf(today) + 1 : undefined,
+    dayCount: trip.itinerary.length,
     doneCount,
     etaMin,
     distanceKm,

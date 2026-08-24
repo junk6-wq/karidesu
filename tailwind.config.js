@@ -4,15 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 8章 カラーパレット。値は tokens.css の CSS 変数から引く。
-        ink: 'var(--c-ink-navy)',
-        chart: 'var(--c-chart-teal)',
-        stone: 'var(--c-stone-white)',
-        brass: 'var(--c-brass-gold)',
-        brick: 'var(--c-brick-coral)',
-        amber: 'var(--c-amber)',
-        'text-ink': 'var(--c-text-ink)',
-        'text-porcelain': 'var(--c-text-porcelain)',
+        // 8章 カラーパレット。値は tokens.css のチャンネル変数から引く。
+        //
+        // var(--c-xxx) をそのまま渡すと Tailwind が色を分解できず、
+        // text-text-porcelain/45 のような不透明度指定が CSS を生成せずに
+        // 黙って捨てられる。<alpha-value> を差し込める形で渡すこと。
+        ink: 'rgb(var(--c-ink-navy-rgb) / <alpha-value>)',
+        chart: 'rgb(var(--c-chart-teal-rgb) / <alpha-value>)',
+        stone: 'rgb(var(--c-stone-white-rgb) / <alpha-value>)',
+        brass: 'rgb(var(--c-brass-gold-rgb) / <alpha-value>)',
+        brick: 'rgb(var(--c-brick-coral-rgb) / <alpha-value>)',
+        amber: 'rgb(var(--c-amber-rgb) / <alpha-value>)',
+        'text-ink': 'rgb(var(--c-text-ink-rgb) / <alpha-value>)',
+        'text-porcelain': 'rgb(var(--c-text-porcelain-rgb) / <alpha-value>)',
       },
       fontFamily: {
         display: 'var(--f-display)',

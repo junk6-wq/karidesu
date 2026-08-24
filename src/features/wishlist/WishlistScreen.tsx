@@ -21,15 +21,15 @@ export function WishlistScreen() {
       <div className="flex items-center justify-between gap-4">
         <Link
           to="/"
-          className="tap label-caps -ml-2 rounded-full px-2 text-text-ink/50 hover:text-text-ink"
+          className="tap label-caps -ml-2 rounded-full px-2 text-text-ink/65 hover:text-text-ink"
         >
           ← HOME
         </Link>
       </div>
 
-      <p className="label-caps mt-4 text-text-ink/45">WISHLIST</p>
+      <p className="label-caps mt-4 text-text-ink/65">WISHLIST</p>
       <h1 className="font-display text-display-m mt-1">行きたい場所</h1>
-      <p className="mt-3 text-[14px] leading-relaxed text-text-ink/55">
+      <p className="mt-3 text-[14px] leading-relaxed text-text-ink/65">
         まだ旅の計画にはしていない「いつか行きたい」を溜めておく場所です。ここに登録しておくと、次の旅の行き先を決めるときにAIが優先的に提案します。
       </p>
 
@@ -48,20 +48,20 @@ export function WishlistScreen() {
                 {item.tags.length > 0 && (
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {item.tags.map((t) => (
-                      <span key={t} className="label-caps rounded-full bg-black/[0.04] px-2 py-0.5 text-[10px] text-text-ink/50">
+                      <span key={t} className="label-caps rounded-full bg-black/[0.04] px-2 py-0.5 text-[10px] text-text-ink/65">
                         {t}
                       </span>
                     ))}
                   </div>
                 )}
                 {item.notes && (
-                  <p className="mt-2 text-[13px] leading-relaxed text-text-ink/60">{item.notes}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-text-ink/65">{item.notes}</p>
                 )}
               </div>
               <button
                 onClick={() => removeWishlistDestination(item.id)}
                 aria-label="削除"
-                className="tap shrink-0 text-[12px] text-text-ink/35 hover:text-brick"
+                className="tap shrink-0 text-[12px] text-text-ink/65 hover:text-brick"
               >
                 削除
               </button>
@@ -78,10 +78,10 @@ export function WishlistScreen() {
 
         {items.length === 0 && !adding && (
           <div className="anim-rise rounded-card border border-dashed border-black/15 p-8 text-center">
-            <div className="mx-auto mb-6 w-28 text-text-ink/25">
+            <div className="mx-auto mb-6 w-28 text-text-ink/65">
               <Thread variant="locked" />
             </div>
-            <p className="text-[13px] leading-relaxed text-text-ink/50">
+            <p className="text-[13px] leading-relaxed text-text-ink/65">
               まだ何も登録されていません。地名だけでも、思いつく場所を足しておきましょう。
             </p>
           </div>
@@ -109,12 +109,12 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
   return (
     <div className="anim-rise mt-4 rounded-2xl border border-black/8 bg-white/75 p-4">
       <label className="block">
-        <span className="label-caps text-text-ink/40">場所の名前</span>
+        <span className="label-caps text-text-ink/65">場所の名前</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="例: 金沢"
-          className="mt-1.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-1.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/65 focus:border-brass"
         />
       </label>
 
@@ -126,7 +126,7 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
         ))}
       </div>
 
-      <p className="label-caps mt-4 text-text-ink/40">興味（任意）</p>
+      <p className="label-caps mt-4 text-text-ink/65">興味（任意）</p>
       <div className="mt-1.5 flex flex-wrap gap-1.5">
         {INTEREST_TAGS.map((tag) => (
           <Chip
@@ -142,13 +142,13 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
       </div>
 
       <label className="mt-4 block">
-        <span className="label-caps text-text-ink/40">メモ（任意）</span>
+        <span className="label-caps text-text-ink/65">メモ（任意）</span>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="例: 友人がおすすめしていた"
           rows={2}
-          className="mt-1.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[13px] placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-1.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[13px] placeholder:text-text-ink/65 focus:border-brass"
         />
       </label>
 

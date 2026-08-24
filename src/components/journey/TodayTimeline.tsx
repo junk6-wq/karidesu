@@ -34,13 +34,13 @@ export function TodayTimeline({
                 done || isNext ? 'border-brass bg-brass' : 'border-white/30'
               } ${isNext ? 'ring-4 ring-brass/25' : ''}`}
             />
-            <span className="mono-readout w-11 shrink-0 text-[11px] text-text-porcelain/45">
+            <span className="mono-readout w-11 shrink-0 text-[11px] text-text-porcelain/55">
               {item.actualArrival ?? item.plannedArrival ?? '--:--'}
             </span>
             <span
               className={`min-w-0 flex-1 truncate text-[14px] ${
                 done
-                  ? 'text-text-porcelain/40 line-through'
+                  ? 'text-text-porcelain/55 line-through'
                   : isNext
                     ? 'font-semibold text-brass'
                     : 'text-text-porcelain/85'
@@ -49,7 +49,7 @@ export function TodayTimeline({
               {spot?.name ?? '—'}
             </span>
             {item.travelToNext && (
-              <span className="mono-readout shrink-0 text-[11px] text-text-porcelain/35">
+              <span className="mono-readout shrink-0 text-[11px] text-text-porcelain/55">
                 {formatDuration(item.travelToNext.durationMin)}
               </span>
             )}

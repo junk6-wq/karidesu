@@ -79,7 +79,7 @@ export function JourneyRouteScreen() {
         >
           ← NEXT
         </Link>
-        <span className="label-caps text-text-porcelain/45">全日程</span>
+        <span className="label-caps text-text-porcelain/55">全日程</span>
       </header>
 
       <div className="mt-5 overflow-hidden">
@@ -133,7 +133,7 @@ export function JourneyRouteScreen() {
                   <h2 className="mono-readout text-[13px] text-brass">
                     DAY {String(dayIndex + 1).padStart(2, '0')}
                   </h2>
-                  <span className="mono-readout text-[11px] text-text-porcelain/45">
+                  <span className="mono-readout text-[11px] text-text-porcelain/55">
                     {formatDateDot(day.date)} {weekdayEn(day.date)}
                   </span>
                   {isToday && (
@@ -145,7 +145,7 @@ export function JourneyRouteScreen() {
                     <span
                       className={`mono-readout ml-auto text-[11px] ${
                         isPast || dayDone === day.items.length
-                          ? 'text-text-porcelain/35'
+                          ? 'text-text-porcelain/55'
                           : 'text-text-porcelain/55'
                       }`}
                     >
@@ -163,7 +163,7 @@ export function JourneyRouteScreen() {
                     dense
                   />
                 ) : (
-                  <p className="mt-2 text-[12px] text-text-porcelain/35">予定はありません。</p>
+                  <p className="mt-2 text-[12px] text-text-porcelain/55">予定はありません。</p>
                 )}
               </section>
             )
@@ -171,7 +171,7 @@ export function JourneyRouteScreen() {
         </div>
 
         {!ctx.state.currentLocation && (
-          <p className="mono-readout mt-8 text-[11px] leading-relaxed text-text-porcelain/35">
+          <p className="mono-readout mt-8 text-[11px] leading-relaxed text-text-porcelain/55">
             現在地が取得できていません。位置情報を許可するか、Next 画面の「遅れそう」から手動で報告できます。
           </p>
         )}

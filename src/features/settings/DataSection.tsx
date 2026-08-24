@@ -78,7 +78,7 @@ export function DataSection() {
 
       <div className="rounded-2xl border border-brick/30 bg-brick/[0.05] p-4">
         <p className="text-[13px] font-semibold text-brick">危険な操作</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-text-ink/55">
+        <p className="mt-1 text-[12px] leading-relaxed text-text-ink/65">
           旅の記録と設定がすべて削除され、空の棚から始まります。元に戻すことはできません。
         </p>
         <Button variant="destructive" className="mt-3" onClick={wipe}>

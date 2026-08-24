@@ -5,15 +5,36 @@
  */
 
 :root {
-  /* --- Color: 搭乗券・コンパス・海図から起こしたパレット --- */
-  --c-ink-navy: #0e1521;
-  --c-chart-teal: #173b3a;
-  --c-stone-white: #edeee9;
-  --c-brass-gold: #c6a15b;
-  --c-brick-coral: #b94a3b;
-  --c-amber: #d68a3c; /* at_risk 表現のみに使う中間色 */
-  --c-text-ink: #14181c;
-  --c-text-porcelain: #f5f3ec;
+  /* --- Color: 搭乗券・コンパス・海図から起こしたパレット ---
+   *
+   * 各色は「チャンネル値」と「色そのもの」の 2 本立てで持つ。
+   *
+   * Tailwind の不透明度指定（text-text-porcelain/45 など）は、色の定義から
+   * アルファ値を差し込める必要がある。色を var(--c-xxx) のような不透明な
+   * 1 つの値として渡すと Tailwind はチャンネルを分解できず、
+   * その指定は CSS を 1 行も生成せずに黙って捨てられる（＝全部フル輝度で描かれる）。
+   * そのため tailwind.config.js には rgb(var(--c-xxx-rgb) / <alpha-value>) を渡す。
+   *
+   * --c-xxx（色そのもの）は、コンポーネントから style={{ color: 'var(--c-brass-gold)' }}
+   * のように直接参照している箇所が 30 箇所以上あるため、チャンネル値から組み立てて残す。
+   */
+  --c-ink-navy-rgb: 14 21 33;
+  --c-chart-teal-rgb: 23 59 58;
+  --c-stone-white-rgb: 237 238 233;
+  --c-brass-gold-rgb: 198 161 91;
+  --c-brick-coral-rgb: 185 74 59;
+  --c-amber-rgb: 214 138 60;
+  --c-text-ink-rgb: 20 24 28;
+  --c-text-porcelain-rgb: 245 243 236;
+
+  --c-ink-navy: rgb(var(--c-ink-navy-rgb));
+  --c-chart-teal: rgb(var(--c-chart-teal-rgb));
+  --c-stone-white: rgb(var(--c-stone-white-rgb));
+  --c-brass-gold: rgb(var(--c-brass-gold-rgb));
+  --c-brick-coral: rgb(var(--c-brick-coral-rgb));
+  --c-amber: rgb(var(--c-amber-rgb)); /* at_risk 表現のみに使う中間色 */
+  --c-text-ink: rgb(var(--c-text-ink-rgb));
+  --c-text-porcelain: rgb(var(--c-text-porcelain-rgb));
 
   /* 派生値 */
   --c-line-light: rgba(20, 24, 28, 0.12);

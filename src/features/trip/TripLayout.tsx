@@ -86,7 +86,7 @@ export function TripLayout() {
           <Link
             to="/"
             className={`tap label-caps -ml-2 flex items-center rounded-full px-2 ${
-              dark ? 'text-text-porcelain/60' : 'text-text-ink/55'
+              dark ? 'text-text-porcelain/60' : 'text-text-ink/65'
             }`}
           >
             ← 棚
@@ -99,7 +99,7 @@ export function TripLayout() {
             className={`tap label-caps flex items-center rounded-full border px-3 ${
               dark
                 ? 'border-white/20 text-text-porcelain/70'
-                : 'border-black/12 text-text-ink/60'
+                : 'border-black/12 text-text-ink/65'
             }`}
           >
             共有
@@ -109,7 +109,7 @@ export function TripLayout() {
             className={`tap label-caps flex items-center rounded-full border px-3 ${
               dark
                 ? 'border-white/20 text-text-porcelain/70'
-                : 'border-black/12 text-text-ink/60'
+                : 'border-black/12 text-text-ink/65'
             }`}
           >
             AI
@@ -135,11 +135,11 @@ export function TripLayout() {
                       : 'text-text-ink'
                     : m.unlocked
                       ? dark
-                        ? 'text-text-porcelain/45'
-                        : 'text-text-ink/40'
+                        ? 'text-text-porcelain/55'
+                        : 'text-text-ink/65'
                       : dark
-                        ? 'text-text-porcelain/25'
-                        : 'text-text-ink/25'
+                        ? 'text-text-porcelain/55'
+                        : 'text-text-ink/65'
                 }`}
                 style={{ fontFamily: 'var(--f-mono)' }}
               >
@@ -178,8 +178,8 @@ export function TripLayout() {
                         ? 'font-semibold text-text-porcelain'
                         : 'font-semibold text-text-ink'
                       : dark
-                        ? 'text-text-porcelain/45 hover:text-text-porcelain/75'
-                        : 'text-text-ink/45 hover:text-text-ink/75'
+                        ? 'text-text-porcelain/55 hover:text-text-porcelain/75'
+                        : 'text-text-ink/65 hover:text-text-ink/75'
                   }`}
                 >
                   {s.label}
@@ -215,7 +215,7 @@ function LockedToast({ note }: { note: string }) {
       className="anim-slide-down pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-5"
     >
       <div className="flex items-center gap-3 rounded-full border border-white/12 bg-ink/95 px-4 py-2.5 text-[13px] text-text-porcelain shadow-sheet">
-        <span className="w-8 text-text-porcelain/40">
+        <span className="w-8 text-text-porcelain/55">
           <Thread variant="locked" />
         </span>
         {note}

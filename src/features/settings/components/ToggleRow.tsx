@@ -31,7 +31,7 @@ export function ToggleRow({
           {badge}
         </span>
         {hint && (
-          <span className="mt-1 block text-[12px] leading-relaxed text-text-ink/50">{hint}</span>
+          <span className="mt-1 block text-[12px] leading-relaxed text-text-ink/65">{hint}</span>
         )}
       </span>
 
@@ -60,7 +60,7 @@ export function StatusBadge({ tone = 'muted', children }: { tone?: 'muted' | 'br
   return (
     <span
       className={`label-caps rounded-full px-2 py-0.5 text-[10px] ${
-        tone === 'brass' ? 'bg-brass/15 text-[#7a5f2b]' : 'bg-black/[0.06] text-text-ink/40'
+        tone === 'brass' ? 'bg-brass/15 text-[#7a5f2b]' : 'bg-black/[0.06] text-text-ink/65'
       }`}
     >
       {children}

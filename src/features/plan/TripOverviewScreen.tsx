@@ -197,7 +197,7 @@ export function TripOverviewScreen() {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-stone via-stone/10 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-          <p className="mono-readout text-[12px] text-text-ink/60">
+          <p className="mono-readout text-[12px] text-text-ink/65">
             {formatDateRange(trip.startDate, trip.endDate)} · {trip.destination}
           </p>
           <h1 className="font-display text-display-xl mt-1">{trip.title}</h1>
@@ -209,7 +209,7 @@ export function TripOverviewScreen() {
         {until > 0 && (
           <div className="mt-6 flex items-center gap-4 rounded-card border border-black/10 bg-white/70 p-5">
             <span className="mono-readout text-[34px] leading-none text-brass">D-{until}</span>
-            <span className="text-[13px] leading-relaxed text-text-ink/60">
+            <span className="text-[13px] leading-relaxed text-text-ink/65">
               出発まであと {until} 日。<br />
               当日になると JOURNEY モードが自動で開きます。
             </span>
@@ -228,7 +228,7 @@ export function TripOverviewScreen() {
           </Link>
         )}
 
-        <div className="mt-7 text-text-ink/25">
+        <div className="mt-7 text-text-ink/65">
           <Thread variant="plan" progress={stats.progress} showHead={stats.progress > 0} />
         </div>
 
@@ -246,10 +246,10 @@ export function TripOverviewScreen() {
         <div className="mt-8 rounded-card border border-black/10 bg-white/70 p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="label-caps text-text-ink/45">TRIP HEALTH</p>
+              <p className="label-caps text-text-ink/65">TRIP HEALTH</p>
               <p className="font-display mt-1 leading-none">
                 <span className="text-[42px]">{health.score}</span>
-                <span className="ml-1 text-[15px] text-text-ink/40">/ 100</span>
+                <span className="ml-1 text-[15px] text-text-ink/65">/ 100</span>
               </p>
             </div>
             <LinkButton to={`/trip/${trip.id}/agent`} variant="primary">
@@ -262,7 +262,7 @@ export function TripOverviewScreen() {
             <div className="anim-fade mt-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
               {Object.entries(health.breakdown).map(([key, value]) => (
                 <div key={key} className="min-w-0">
-                  <p className="label-caps truncate text-text-ink/35">{HEALTH_LABELS[key] ?? key}</p>
+                  <p className="label-caps truncate text-text-ink/65">{HEALTH_LABELS[key] ?? key}</p>
                   <p className="mono-readout mt-0.5 text-[15px] text-text-ink">{value}</p>
                 </div>
               ))}
@@ -282,11 +282,11 @@ export function TripOverviewScreen() {
             </span>
           </div>
 
-          <p className="mt-3 text-[13px] leading-relaxed text-text-ink/60">{nextAction}</p>
+          <p className="mt-3 text-[13px] leading-relaxed text-text-ink/65">{nextAction}</p>
 
           <button
             onClick={() => setShowBreakdown((v) => !v)}
-            className="tap mt-1 text-[12px] text-text-ink/45 underline decoration-dotted underline-offset-2"
+            className="tap mt-1 text-[12px] text-text-ink/65 underline decoration-dotted underline-offset-2"
           >
             {showBreakdown ? '内訳を閉じる' : '内訳を見る'}
           </button>
@@ -294,13 +294,13 @@ export function TripOverviewScreen() {
 
         {/* 聞かれる前に用意しておいた直し方。1タップで適用できる */}
         {autoBusy && !autoFix && (
-          <p className="mono-readout mt-4 text-[12px] text-text-ink/40">
+          <p className="mono-readout mt-4 text-[12px] text-text-ink/65">
             AI が直し方を探しています…
           </p>
         )}
         {autoFix && (
           <div className="mt-4">
-            <p className="label-caps mb-2 text-text-ink/45">AI が見つけた改善 · {autoFix.title}</p>
+            <p className="label-caps mb-2 text-text-ink/65">AI が見つけた改善 · {autoFix.title}</p>
             <ProposalCard
               proposal={autoFix.proposal}
               spots={trip.spots}
@@ -316,7 +316,7 @@ export function TripOverviewScreen() {
         {/* 旅の骨格 */}
         <section className="mt-11 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
           <div>
-            <h2 className="label-caps text-text-ink/45">ROUTE</h2>
+            <h2 className="label-caps text-text-ink/65">ROUTE</h2>
             <div className="mt-3 overflow-hidden rounded-card border border-black/10">
               <MapLayer
                 markers={trip.itinerary.flatMap((day) =>
@@ -342,7 +342,7 @@ export function TripOverviewScreen() {
           </div>
 
           <div>
-            <h2 className="label-caps text-text-ink/45">DAYS</h2>
+            <h2 className="label-caps text-text-ink/65">DAYS</h2>
             <ol className="mt-3 space-y-2">
               {trip.itinerary.map((day, i) => {
                 const names = day.items
@@ -369,7 +369,7 @@ export function TripOverviewScreen() {
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="mono-readout block text-[11px] text-text-ink/40">
+                        <span className="mono-readout block text-[11px] text-text-ink/65">
                           {day.date.slice(5).replace('-', '.')} {weekdayEn(day.date)}
                         </span>
                         <span className="mt-1 block truncate text-[14px]">

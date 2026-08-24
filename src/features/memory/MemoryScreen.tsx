@@ -53,7 +53,7 @@ export function MemoryScreen() {
           <ThreadDraw />
         </div>
         <p className="font-display text-display-m mt-8">旅を編んでいます</p>
-        <p className="mono-readout mt-3 text-[12px] text-text-porcelain/45">
+        <p className="mono-readout mt-3 text-[12px] text-text-porcelain/55">
           {stats.itemCount} SPOTS · {formatKm(stats.distanceKm)}
         </p>
       </div>
@@ -105,7 +105,7 @@ export function MemoryScreen() {
             <section key={day.id} className="mt-16">
               <div className="mono-readout flex items-baseline gap-3 text-[12px] text-brass">
                 <span>DAY {String(i + 1).padStart(2, '0')}</span>
-                <span className="text-text-porcelain/40">
+                <span className="text-text-porcelain/55">
                   {formatDateDot(day.date)} {weekdayEn(day.date)}
                 </span>
               </div>
@@ -123,7 +123,7 @@ export function MemoryScreen() {
                 </p>
               )}
 
-              <ul className="mono-readout mt-5 space-y-1 text-[12px] text-text-porcelain/45">
+              <ul className="mono-readout mt-5 space-y-1 text-[12px] text-text-porcelain/55">
                 {items.map((item) => (
                   <li key={item.id} className="flex gap-3">
                     <span className="w-10 shrink-0">
@@ -152,7 +152,7 @@ export function MemoryScreen() {
 
         {/* THE THREAD の完成形 = 旅の背骨 */}
         <section className="mt-20">
-          <p className="label-caps text-text-porcelain/45">THE THREAD</p>
+          <p className="label-caps text-text-porcelain/55">THE THREAD</p>
           <div className="mt-4 overflow-hidden rounded-card border border-white/10">
             <MapLayer
               markers={trip.itinerary.flatMap((day) =>
@@ -187,7 +187,7 @@ export function MemoryScreen() {
         {/* 編集 */}
         <div className="mt-14 rounded-card border border-white/10 p-5">
           <div className="flex items-center justify-between gap-4">
-            <p className="label-caps text-text-porcelain/45">
+            <p className="label-caps text-text-porcelain/55">
               {memory.edited ? 'EDITED' : 'AUTO-GENERATED'}
             </p>
             {!editing && (

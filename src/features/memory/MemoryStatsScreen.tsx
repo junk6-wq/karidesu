@@ -82,7 +82,7 @@ export function MemoryStatsScreen() {
 
       {/* 費用の内訳 */}
       <section className="mt-16">
-        <p className="label-caps text-text-porcelain/45">SPENT BY CATEGORY</p>
+        <p className="label-caps text-text-porcelain/55">SPENT BY CATEGORY</p>
         <ul className="mt-5 space-y-4">
           {BUDGET_ORDER.map((c) => (
             <li key={c}>
@@ -104,7 +104,7 @@ export function MemoryStatsScreen() {
       {/* 何を見て回ったか */}
       {categories.size > 0 && (
         <section className="mt-14">
-          <p className="label-caps text-text-porcelain/45">WHAT WE SAW</p>
+          <p className="label-caps text-text-porcelain/55">WHAT WE SAW</p>
           <ul className="mono-readout mt-5 flex flex-wrap gap-x-6 gap-y-3 text-[13px]">
             {[...categories.entries()]
               .sort((a, b) => b[1] - a[1])
@@ -117,7 +117,7 @@ export function MemoryStatsScreen() {
         </section>
       )}
 
-      <p className="mono-readout mt-16 text-[11px] leading-relaxed text-text-porcelain/30">
+      <p className="mono-readout mt-16 text-[11px] leading-relaxed text-text-porcelain/55">
         距離はスポット間の直線距離の合計です（MVP の近似）。実経路 API を繋ぐと実走行距離に置き換わります。
       </p>
     </div>

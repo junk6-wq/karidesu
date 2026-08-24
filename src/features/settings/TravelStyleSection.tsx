@@ -42,14 +42,14 @@ export function TravelStyleSection() {
     >
       <label className="block rounded-2xl border border-black/8 bg-white/70 p-4">
         <span className="text-[14px] font-semibold text-text-ink">出発地</span>
-        <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/45">
+        <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/65">
           いつもの旅の出発地点（例: 水戸）
         </p>
         <input
           value={travelStyle.departure}
           onChange={(e) => updateTravelStyle({ departure: e.target.value })}
           placeholder="例: 水戸"
-          className="mt-2.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[15px] placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2.5 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[15px] placeholder:text-text-ink/65 focus:border-brass"
         />
       </label>
 
@@ -118,7 +118,7 @@ export function TravelStyleSection() {
 
       <label className="block rounded-2xl border border-black/8 bg-white/70 p-4">
         <span className="text-[14px] font-semibold text-text-ink">旅のこだわりメモ</span>
-        <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/45">
+        <p className="mt-0.5 text-[12px] leading-relaxed text-text-ink/65">
           自由に書いてください。将来、AI がこのメモを読み取って旅程作りに活かす予定です（現在は保存のみ）。
         </p>
         <textarea
@@ -126,7 +126,7 @@ export function TravelStyleSection() {
           onChange={(e) => updateTravelStyle({ freeNotes: e.target.value })}
           rows={3}
           placeholder="例: 温泉と景色を重視。車移動で1日の運転は4時間以内。予定は詰め込みすぎない。"
-          className="mt-2.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] leading-relaxed placeholder:text-text-ink/30 focus:border-brass"
+          className="mt-2.5 w-full resize-none rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] leading-relaxed placeholder:text-text-ink/65 focus:border-brass"
         />
       </label>
     </SettingsSection>

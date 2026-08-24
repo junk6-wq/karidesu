@@ -18,19 +18,19 @@ export function HomeScreen() {
     <div className="min-h-dvh bg-stone pb-[120px]">
       <header className="mx-auto flex max-w-[900px] items-end justify-between gap-4 px-5 pb-6 pt-[max(28px,env(safe-area-inset-top))]">
         <div>
-          <p className="label-caps text-text-ink/45">PASSAGE</p>
+          <p className="label-caps text-text-ink/65">PASSAGE</p>
           <h1 className="font-display text-display-l mt-1">旅の棚</h1>
         </div>
         <div className="flex items-center gap-2">
           <Link
             to="/wishlist"
-            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/60 hover:border-black/30"
+            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/65 hover:border-black/30"
           >
             WISHLIST
           </Link>
           <Link
             to="/settings"
-            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/60 hover:border-black/30"
+            className="tap label-caps flex items-center rounded-full border border-black/12 px-4 text-text-ink/65 hover:border-black/30"
           >
             SETTINGS
           </Link>
@@ -70,11 +70,11 @@ export function HomeScreen() {
 function EmptyShelf() {
   return (
     <div className="anim-rise rounded-card border border-black/10 bg-white/60 px-6 py-16 text-center">
-      <div className="mx-auto mb-8 w-40 text-text-ink/30">
+      <div className="mx-auto mb-8 w-40 text-text-ink/65">
         <Thread variant="locked" />
       </div>
       <h2 className="font-display text-display-m">まだ、どこへも行っていない。</h2>
-      <p className="mx-auto mt-3 max-w-[380px] text-[14px] leading-relaxed text-text-ink/55">
+      <p className="mx-auto mt-3 max-w-[380px] text-[14px] leading-relaxed text-text-ink/65">
         行き先と日付を決めるところから、旅は始まります。あとは PASSAGE が一緒に組み立てます。
       </p>
       <Link

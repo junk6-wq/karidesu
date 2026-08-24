@@ -111,7 +111,7 @@ export function AddSpotSheet({
             key={value}
             onClick={() => setTab(value)}
             className={`tap flex-1 rounded-full text-[12px] ${
-              tab === value ? 'bg-ink text-text-porcelain' : 'text-text-ink/55'
+              tab === value ? 'bg-ink text-text-porcelain' : 'text-text-ink/65'
             }`}
           >
             {label}
@@ -132,7 +132,7 @@ export function AddSpotSheet({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="場所やカテゴリで検索"
-            className="w-full rounded-xl border border-black/12 bg-white px-4 py-3 placeholder:text-text-ink/30 focus:border-brass"
+            className="w-full rounded-xl border border-black/12 bg-white px-4 py-3 placeholder:text-text-ink/65 focus:border-brass"
           />
           <ul className="mt-4 space-y-2">
             {results.map((r) => (
@@ -141,7 +141,7 @@ export function AddSpotSheet({
               </li>
             ))}
             {query && results.length === 0 && (
-              <p className="py-6 text-center text-[13px] text-text-ink/45">
+              <p className="py-6 text-center text-[13px] text-text-ink/65">
                 見つかりませんでした。「手で登録」から追加できます。
               </p>
             )}
@@ -160,7 +160,7 @@ export function AddSpotSheet({
             </li>
           ))}
           {unused.length === 0 && (
-            <p className="py-6 text-center text-[13px] text-text-ink/45">
+            <p className="py-6 text-center text-[13px] text-text-ink/65">
               登録済みのスポットはすべて旅程に入っています。
             </p>
           )}
@@ -201,7 +201,7 @@ export function AddSpotSheet({
               value={manual.hours}
               onChange={(e) => setManual({ ...manual, hours: e.target.value })}
               placeholder="09:00–17:00"
-              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 placeholder:text-text-ink/30 focus:border-brass"
+              className="w-full rounded-xl border border-black/12 bg-white px-3 py-2.5 placeholder:text-text-ink/65 focus:border-brass"
             />
           </Field>
           <Button variant="primary" className="w-full" onClick={addManual}>
@@ -222,7 +222,7 @@ function SpotRow({ spot, onClick }: { spot: Spot; onClick: () => void }) {
       <Photo src={spot.photoUrls[0]} alt={spot.name} className="h-12 w-16 shrink-0 rounded-lg" />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[14px] font-semibold">{spot.name}</span>
-        <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/45">
+        <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/65">
           {spot.category}
         </span>
       </span>
@@ -234,7 +234,7 @@ function SpotRow({ spot, onClick }: { spot: Spot; onClick: () => void }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="label-caps text-text-ink/45">{label}</span>
+      <span className="label-caps text-text-ink/65">{label}</span>
       <span className="mt-2 block">{children}</span>
     </label>
   )

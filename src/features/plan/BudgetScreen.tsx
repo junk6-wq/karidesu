@@ -43,7 +43,7 @@ export function BudgetScreen() {
 
   return (
     <div className="mx-auto max-w-[860px] px-5 pb-24 pt-6">
-      <p className="label-caps text-text-ink/45">BUDGET</p>
+      <p className="label-caps text-text-ink/65">BUDGET</p>
       <h1 className="font-display text-display-m mt-1">予算</h1>
 
       <div className="mt-7 grid grid-cols-3 gap-4 rounded-card border border-black/10 bg-white/70 p-5">
@@ -60,7 +60,7 @@ export function BudgetScreen() {
         />
       </div>
 
-      <p className="mono-readout mt-3 text-[12px] text-text-ink/45">
+      <p className="mono-readout mt-3 text-[12px] text-text-ink/65">
         1人あたり {formatCurrency(plannedTotal / people, trip.budget.currency)} · {people} 名
       </p>
 
@@ -75,7 +75,7 @@ export function BudgetScreen() {
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[15px] font-semibold">{BUDGET_LABELS[category]}</span>
-                <span className="mono-readout text-[11px] text-text-ink/40">
+                <span className="mono-readout text-[11px] text-text-ink/65">
                   {Math.round(share * 100)}%
                 </span>
               </div>
@@ -126,9 +126,9 @@ function MoneyInput({
 }) {
   return (
     <label className="block">
-      <span className="label-caps text-text-ink/40">{label}</span>
+      <span className="label-caps text-text-ink/65">{label}</span>
       <span className="mt-1.5 flex items-center gap-1 rounded-xl border border-black/12 bg-white px-3 py-2 focus-within:border-brass">
-        <span className="mono-readout text-text-ink/35">¥</span>
+        <span className="mono-readout text-text-ink/65">¥</span>
         <input
           type="number"
           inputMode="numeric"
