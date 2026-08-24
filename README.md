@@ -120,6 +120,7 @@ JOURNEY 中に電波が切れても画面は開く。旅のデータ自体は lo
 | `frontend-design` | 新しい UI を起こすときの視覚設計。テンプレ然とした既定値に流れないための指針（[anthropics/skills](https://github.com/anthropics/skills)） |
 | `accessibility` | WCAG 2.2 に沿った監査と改善。コントラスト・キーボード操作・ARIA など（[addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills)） |
 | `vite` | `vite.config.ts`・プラグイン API・ビルド設定（[antfu/skills](https://github.com/antfu/skills)）。**Vite 8 / Rolldown 前提で書かれているので、Vite 5 を使っている本リポジトリでは記述がずれる箇所がある** |
+| `web-design-guidelines` | 書いた UI を Vercel の Web Interface Guidelines に照らして監査し、`file:line` で指摘する（[vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)）。`frontend-design` が「作る側」、こちらが「見直す側」 |
 
 外部スキルは `npx skills add <owner/repo@skill>` で入れたもの。実体は `.agents/skills/` にあり、
 `.claude/skills/` からシンボリックリンクを張っている。出どころとハッシュは `skills-lock.json` に記録され、
