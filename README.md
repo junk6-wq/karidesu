@@ -117,6 +117,13 @@ JOURNEY 中に電波が切れても画面は開く。旅のデータ自体は lo
 | --- | --- |
 | `passage-ui` | この UI の決まり（3 幕構成・THE THREAD・Brass Gold の意味・画面追加時に触る 3 ファイル・共通部品の一覧）。画面や UI を触るときに自動で読まれる |
 | `find-skills` | 他のスキルを探して入れるためのスキル。[vercel-labs/skills](https://github.com/vercel-labs/skills) をそのまま置いたもので、`npx skills` CLI と https://skills.sh/ を使う |
+| `frontend-design` | 新しい UI を起こすときの視覚設計。テンプレ然とした既定値に流れないための指針（[anthropics/skills](https://github.com/anthropics/skills)） |
+| `accessibility` | WCAG 2.2 に沿った監査と改善。コントラスト・キーボード操作・ARIA など（[addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills)） |
+| `vite` | `vite.config.ts`・プラグイン API・ビルド設定（[antfu/skills](https://github.com/antfu/skills)）。**Vite 8 / Rolldown 前提で書かれているので、Vite 5 を使っている本リポジトリでは記述がずれる箇所がある** |
+
+外部スキルは `npx skills add <owner/repo@skill>` で入れたもの。実体は `.agents/skills/` にあり、
+`.claude/skills/` からシンボリックリンクを張っている。出どころとハッシュは `skills-lock.json` に記録され、
+`npx skills update` で更新できる。
 
 ## デプロイ
 
