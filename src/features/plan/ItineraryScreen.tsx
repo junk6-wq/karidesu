@@ -151,7 +151,7 @@ export function ItineraryScreen() {
     <div className="mx-auto max-w-[1200px] px-5 pb-28 pt-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="label-caps text-text-ink/45">DAY BY DAY</p>
+          <p className="label-caps text-text-ink/65">DAY BY DAY</p>
           <h1 className="font-display text-display-m mt-1">旅程</h1>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -185,7 +185,7 @@ export function ItineraryScreen() {
             key={tab}
             onClick={() => setMobileTab(tab)}
             className={`tap flex-1 rounded-full text-[12px] tracking-[0.14em] ${
-              mobileTab === tab ? 'bg-ink text-text-porcelain' : 'text-text-ink/50'
+              mobileTab === tab ? 'bg-ink text-text-porcelain' : 'text-text-ink/65'
             }`}
             style={{ fontFamily: 'var(--f-mono)' }}
           >
@@ -203,7 +203,7 @@ export function ItineraryScreen() {
                 <h2 className="mono-readout text-[13px] text-brass">
                   DAY {String(dayIndex + 1).padStart(2, '0')}
                 </h2>
-                <span className="mono-readout text-[11px] text-text-ink/40">
+                <span className="mono-readout text-[11px] text-text-ink/65">
                   {formatDateDot(day.date)} {weekdayEn(day.date)}
                 </span>
                 {day.date === todayISO && (
@@ -255,14 +255,14 @@ export function ItineraryScreen() {
               </DndContext>
 
               {day.items.length === 0 && (
-                <p className="rounded-2xl border border-dashed border-black/15 p-5 text-[13px] text-text-ink/45">
+                <p className="rounded-2xl border border-dashed border-black/15 p-5 text-[13px] text-text-ink/65">
                   この日はまだ空です。
                 </p>
               )}
 
               <button
                 onClick={() => setAddToDayId(day.id)}
-                className="tap mt-2 flex w-full items-center justify-center rounded-2xl border border-dashed border-black/15 text-[13px] text-text-ink/50 transition duration-200 ease-passage hover:border-brass hover:text-text-ink"
+                className="tap mt-2 flex w-full items-center justify-center rounded-2xl border border-dashed border-black/15 text-[13px] text-text-ink/65 transition duration-200 ease-passage hover:border-brass hover:text-text-ink"
               >
                 ＋ この日に追加
               </button>

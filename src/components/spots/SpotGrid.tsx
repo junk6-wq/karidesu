@@ -85,7 +85,7 @@ export function SpotGrid({
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center justify-between">
-        <span className="mono-readout text-[12px] text-text-porcelain/50">{spots.length} 件の候補</span>
+        <span className="mono-readout text-[12px] text-text-porcelain/55">{spots.length} 件の候補</span>
         <span className="mono-readout text-[12px] text-brass">
           {taken.length}
           {recommended ? ` / ${recommended}` : ''} 件えらんだ
@@ -108,7 +108,7 @@ export function SpotGrid({
       </div>
 
       {spots.length === 0 && (
-        <p className="mt-6 rounded-2xl border border-dashed border-white/15 p-6 text-center text-[13px] text-text-porcelain/50">
+        <p className="mt-6 rounded-2xl border border-dashed border-white/15 p-6 text-center text-[13px] text-text-porcelain/55">
           候補がありません。
         </p>
       )}

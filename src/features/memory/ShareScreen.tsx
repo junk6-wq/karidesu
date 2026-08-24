@@ -66,7 +66,7 @@ export function ShareScreen() {
     URL.revokeObjectURL(url)
   }
 
-  const subText = 'text-text-ink/55'
+  const subText = 'text-text-ink/65'
   const bodyText = 'text-text-ink/70'
 
   return (
@@ -74,7 +74,7 @@ export function ShareScreen() {
       <div className="mx-auto max-w-[720px] px-6 pb-28 pt-[max(20px,env(safe-area-inset-top))]">
         <Link
           to={`/trip/${trip.id}`}
-          className="tap label-caps no-print -ml-2 inline-flex items-center rounded-full px-2 text-text-ink/55"
+          className="tap label-caps no-print -ml-2 inline-flex items-center rounded-full px-2 text-text-ink/65"
         >
           ← {trip.title}
         </Link>
@@ -166,7 +166,7 @@ export function ShareScreen() {
 
         {note && <p className="mono-readout no-print mt-4 text-[12px] text-brass">{note}</p>}
 
-        <p className="mono-readout no-print mt-10 text-[11px] leading-relaxed text-text-ink/35">
+        <p className="mono-readout no-print mt-10 text-[11px] leading-relaxed text-text-ink/65">
           PDF はブラウザの印刷ダイアログから「PDF に保存」を選んでください。
           共有リンクの発行は、データをクラウドに置いたあとの機能になります（14章）。
         </p>

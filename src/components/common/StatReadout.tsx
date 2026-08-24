@@ -19,7 +19,7 @@ export function StatReadout({
   return (
     <div className="min-w-0">
       <div
-        className={`label-caps ${tone === 'dark' ? 'text-text-porcelain/45' : 'text-text-ink/45'}`}
+        className={`label-caps ${tone === 'dark' ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}
       >
         {label}
       </div>

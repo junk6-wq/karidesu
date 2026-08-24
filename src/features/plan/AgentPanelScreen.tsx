@@ -181,19 +181,19 @@ export function AgentPanelScreen() {
 
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-40 pt-6">
-      <p className="label-caps text-text-ink/45">AI AGENT</p>
+      <p className="label-caps text-text-ink/65">AI AGENT</p>
       <h1 className="font-display text-display-m mt-1">一緒に組み立てる</h1>
-      <p className="mt-3 text-[14px] leading-relaxed text-text-ink/55">
+      <p className="mt-3 text-[14px] leading-relaxed text-text-ink/65">
         質問に答えるのではなく、旅程そのものに手を入れます。変更は必ず案として見せてから、あなたが選んで適用します。
       </p>
 
-      <div className="mt-4 text-text-ink/20">
+      <div className="mt-4 text-text-ink/65">
         <Thread variant="plan" progress={Math.min(1, bubbles.length / 4)} showHead />
       </div>
 
       {/* 自然言語での編集リクエスト */}
       <div className="anim-rise mt-6 rounded-2xl border border-black/8 bg-white/75 p-4">
-        <label htmlFor="agent-nl-input" className="label-caps text-text-ink/40">
+        <label htmlFor="agent-nl-input" className="label-caps text-text-ink/65">
           AI に伝える
         </label>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -206,7 +206,7 @@ export function AgentPanelScreen() {
               if (e.key === 'Enter') void submitNaturalLanguage(nlText)
             }}
             placeholder="例: 2日目をもう少しゆっくりにして"
-            className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/30 focus:border-brass"
+            className="min-w-0 flex-1 rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-[14px] placeholder:text-text-ink/65 focus:border-brass"
           />
           <Button
             variant="primary"
@@ -222,7 +222,7 @@ export function AgentPanelScreen() {
               key={ex}
               onClick={() => void submitNaturalLanguage(ex)}
               disabled={nlBusy}
-              className="tap rounded-full border border-black/10 px-2.5 py-1 text-[11px] text-text-ink/50 transition duration-200 ease-passage hover:border-brass disabled:opacity-40"
+              className="tap rounded-full border border-black/10 px-2.5 py-1 text-[11px] text-text-ink/65 transition duration-200 ease-passage hover:border-brass disabled:opacity-40"
             >
               {ex}
             </button>
@@ -275,7 +275,7 @@ export function AgentPanelScreen() {
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] font-semibold">{spot.name}</span>
-                      <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/45">
+                      <span className="mono-readout mt-0.5 block text-[11px] text-text-ink/65">
                         {spot.category} · {formatDuration(spot.estimatedStayMin ?? 60)}
                       </span>
                     </span>
@@ -303,7 +303,7 @@ export function AgentPanelScreen() {
           )}
 
           {b.kind === 'budget' && b.lines.length > 0 && (
-            <ul className="mono-readout mt-3 space-y-1 text-[12px] text-text-ink/60">
+            <ul className="mono-readout mt-3 space-y-1 text-[12px] text-text-ink/65">
               {b.lines.map((l) => (
                 <li key={l}>{l}</li>
               ))}
@@ -320,7 +320,7 @@ export function AgentPanelScreen() {
 
       {(busy || nlBusy || agentBusy) && (
         <AgentBubble>
-          <span className="mono-readout text-[12px] text-text-ink/45" aria-hidden="true">
+          <span className="mono-readout text-[12px] text-text-ink/65" aria-hidden="true">
             考えています…
           </span>
         </AgentBubble>
@@ -350,7 +350,7 @@ function AgentBubble({ children }: { children: React.ReactNode }) {
     <div className="anim-rise mt-4 rounded-2xl border border-black/8 bg-white/75 p-4 shadow-[0_10px_30px_-24px_rgba(14,21,33,0.6)]">
       <div className="mb-2 flex items-center gap-2">
         <span className="h-1.5 w-1.5 rounded-full bg-brass" />
-        <span className="label-caps text-text-ink/40">AGENT</span>
+        <span className="label-caps text-text-ink/65">AGENT</span>
       </div>
       {children}
     </div>

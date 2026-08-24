@@ -93,7 +93,7 @@ export function BottomSheet({
             <button
               onClick={onClose}
               aria-label="閉じる"
-              className="tap -mr-2 -mt-2 rounded-full text-text-ink/50 hover:text-text-ink"
+              className="tap -mr-2 -mt-2 rounded-full text-text-ink/65 hover:text-text-ink"
             >
               ✕
             </button>

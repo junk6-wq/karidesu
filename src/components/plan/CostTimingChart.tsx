@@ -30,10 +30,10 @@ export function CostTimingChart({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <p className={`label-caps ${dark ? 'text-text-porcelain/50' : 'text-text-ink/40'}`}>
+        <p className={`label-caps ${dark ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}>
           時期による費用の推定
         </p>
-        <p className={`mono-readout text-[10px] ${dark ? 'text-text-porcelain/35' : 'text-text-ink/35'}`}>
+        <p className={`mono-readout text-[10px] ${dark ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}>
           実料金ではなく概算です
         </p>
       </div>
@@ -62,10 +62,10 @@ export function CostTimingChart({
                   style={{ height: `${heightPct}%` }}
                 />
               </div>
-              <span className={`mono-readout text-[10px] ${dark ? 'text-text-porcelain/60' : 'text-text-ink/50'}`}>
+              <span className={`mono-readout text-[10px] ${dark ? 'text-text-porcelain/60' : 'text-text-ink/65'}`}>
                 {formatDateDot(e.startDate).slice(5)}
               </span>
-              <span className={`mono-readout text-[9px] ${dark ? 'text-text-porcelain/35' : 'text-text-ink/35'}`}>
+              <span className={`mono-readout text-[9px] ${dark ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}>
                 {weekdayJa(e.startDate)}
               </span>
               {e.isCheapest && (
@@ -104,7 +104,7 @@ function SelectedSummary({
     <div className={`mt-3 rounded-xl p-3 ${dark ? 'bg-white/5' : 'bg-black/[0.03]'}`}>
       <p className={`mono-readout text-[13px] font-semibold ${dark ? 'text-text-porcelain' : 'text-text-ink'}`}>
         {formatCurrency(estimate.total, currency)}
-        <span className={`ml-1.5 text-[11px] font-normal ${dark ? 'text-text-porcelain/45' : 'text-text-ink/40'}`}>
+        <span className={`ml-1.5 text-[11px] font-normal ${dark ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}>
           （{estimate.seasonLabel} · 1泊あたり約 {formatCurrency(estimate.perNightAverage, currency)}）
         </span>
       </p>

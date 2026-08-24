@@ -33,7 +33,7 @@ export function ReplanSheet({
           <button
             onClick={onDismiss}
             aria-label="閉じる"
-            className="tap -mr-1 -mt-1 shrink-0 rounded-full text-text-porcelain/45 hover:text-text-porcelain"
+            className="tap -mr-1 -mt-1 shrink-0 rounded-full text-text-porcelain/55 hover:text-text-porcelain"
           >
             ✕
           </button>
@@ -59,7 +59,7 @@ export function ReplanSheet({
                   </span>
                   <span className="mono-readout mt-3 text-[11px] text-brass">
                     {s.savedMinutes > 0 ? `− ${formatDuration(s.savedMinutes)}` : '予定は削らない'}
-                    <span className="ml-2 text-text-porcelain/40">採用する →</span>
+                    <span className="ml-2 text-text-porcelain/55">採用する →</span>
                   </span>
                 </button>
               </li>

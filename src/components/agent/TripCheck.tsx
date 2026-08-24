@@ -84,7 +84,7 @@ export function TripCheck({
           <span className="text-[13px] font-semibold text-text-ink">
             {warnings.length > 0 ? `要確認 ${warnings.length}件` : '問題ありません'}
           </span>
-          <span className="label-caps ml-auto text-[10px] text-text-ink/35">
+          <span className="label-caps ml-auto text-[10px] text-text-ink/65">
             {expanded ? '閉じる' : 'TRIP CHECK'}
           </span>
         </button>
@@ -98,7 +98,7 @@ export function TripCheck({
                     <span>{dotFor(items)}</span>
                     <span className="text-text-ink/75">{CATEGORY_LABEL[cat]}</span>
                     {items.length > 0 && (
-                      <span className="mono-readout ml-auto text-[11px] text-text-ink/40">
+                      <span className="mono-readout ml-auto text-[11px] text-text-ink/65">
                         {items.length}件
                       </span>
                     )}
@@ -115,7 +115,7 @@ export function TripCheck({
 
   return (
     <div>
-      <p className="label-caps text-text-ink/40">TRIP CHECK</p>
+      <p className="label-caps text-text-ink/65">TRIP CHECK</p>
       <ul className="mt-2 space-y-1.5">
         {CATEGORY_ORDER.map((cat) => {
           const items = byCategory.get(cat) ?? []
@@ -124,7 +124,7 @@ export function TripCheck({
               <span>{dotFor(items)}</span>
               <span className="text-text-ink/75">{CATEGORY_LABEL[cat]}</span>
               {items.length > 0 && (
-                <span className="mono-readout ml-auto text-[11px] text-text-ink/40">{items.length}件</span>
+                <span className="mono-readout ml-auto text-[11px] text-text-ink/65">{items.length}件</span>
               )}
             </li>
           )

@@ -53,7 +53,7 @@ export function Photo({
         />
       )}
       {!showImage && (
-        <span className="label-caps absolute bottom-3 left-3 text-text-porcelain/40">
+        <span className="label-caps absolute bottom-3 left-3 text-text-porcelain/55">
           NO IMAGE
         </span>
       )}

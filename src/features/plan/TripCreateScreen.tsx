@@ -252,12 +252,12 @@ export function TripCreateScreen() {
           >
             ← BACK
           </button>
-          <span className="mono-readout text-[12px] text-text-porcelain/50">
+          <span className="mono-readout text-[12px] text-text-porcelain/55">
             {step + 1} / 4
           </span>
         </header>
 
-        <div className="mt-4 text-text-porcelain/40">
+        <div className="mt-4 text-text-porcelain/55">
           <Thread variant="plan" progress={(step + 1) / 4} showHead />
         </div>
 
@@ -276,7 +276,7 @@ export function TripCreateScreen() {
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="例: 北海道"
-                className="mt-7 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-[18px] placeholder:text-text-porcelain/30 focus:border-brass"
+                className="mt-7 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-[18px] placeholder:text-text-porcelain/55 focus:border-brass"
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export function TripCreateScreen() {
 
               {wishlist.length > 0 && (
                 <div className="mt-6">
-                  <p className="label-caps text-text-porcelain/50">行きたい場所リストから</p>
+                  <p className="label-caps text-text-porcelain/55">行きたい場所リストから</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {wishlist.map((w) => (
                       <Chip
@@ -321,7 +321,7 @@ export function TripCreateScreen() {
                 {destSuggestions && (
                   <div className="anim-rise mt-4 space-y-2">
                     {destSuggestions.length === 0 && (
-                      <p className="text-[13px] text-text-porcelain/50">
+                      <p className="text-[13px] text-text-porcelain/55">
                         設定画面で興味を選んでおくと、提案の精度が上がります。
                       </p>
                     )}
@@ -337,7 +337,7 @@ export function TripCreateScreen() {
                       >
                         <span>
                           <span className="block text-[15px] font-semibold">{s.name}</span>
-                          <span className="mt-0.5 block text-[12px] text-text-porcelain/50">{s.reason}</span>
+                          <span className="mt-0.5 block text-[12px] text-text-porcelain/55">{s.reason}</span>
                         </span>
                         {s.source === 'wishlist' && (
                           <span className="label-caps shrink-0 rounded-full bg-white/10 px-2 py-1 text-[9px] text-text-porcelain/60">
@@ -351,12 +351,12 @@ export function TripCreateScreen() {
               </div>
 
               <label className="mt-9 block">
-                <span className="label-caps text-text-porcelain/50">旅の名前（任意）</span>
+                <span className="label-caps text-text-porcelain/55">旅の名前（任意）</span>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={destination ? destination.toUpperCase() : 'HOKKAIDO'}
-                  className="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 font-display text-[22px] placeholder:text-text-porcelain/25 focus:border-brass"
+                  className="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 font-display text-[22px] placeholder:text-text-porcelain/55 focus:border-brass"
                 />
               </label>
             </section>
@@ -393,7 +393,7 @@ export function TripCreateScreen() {
               {dateMode === 'fixed' && (
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   <label className="block">
-                    <span className="label-caps text-text-porcelain/50">出発</span>
+                    <span className="label-caps text-text-porcelain/55">出発</span>
                     <input
                       type="date"
                       value={startDate}
@@ -405,7 +405,7 @@ export function TripCreateScreen() {
                     />
                   </label>
                   <label className="block">
-                    <span className="label-caps text-text-porcelain/50">帰着</span>
+                    <span className="label-caps text-text-porcelain/55">帰着</span>
                     <input
                       type="date"
                       value={endDate}
@@ -424,7 +424,7 @@ export function TripCreateScreen() {
                   </p>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                      <span className="label-caps text-text-porcelain/50">休暇の開始（最短）</span>
+                      <span className="label-caps text-text-porcelain/55">休暇の開始（最短）</span>
                       <input
                         type="date"
                         value={earliestStart}
@@ -436,7 +436,7 @@ export function TripCreateScreen() {
                       />
                     </label>
                     <label className="block">
-                      <span className="label-caps text-text-porcelain/50">休暇の終了（最長）</span>
+                      <span className="label-caps text-text-porcelain/55">休暇の終了（最長）</span>
                       <input
                         type="date"
                         value={latestEnd}
@@ -453,7 +453,7 @@ export function TripCreateScreen() {
                   {/* label ではなく group。中身はボタンと表示だけで入力要素が無く、
                       label にしても何も結び付かない。 */}
                   <div role="group" aria-labelledby="flex-nights-label" className="mt-6 block">
-                    <span id="flex-nights-label" className="label-caps text-text-porcelain/50">
+                    <span id="flex-nights-label" className="label-caps text-text-porcelain/55">
                       何泊する？
                     </span>
                     <div className="mt-2 flex items-center gap-3">
@@ -492,7 +492,7 @@ export function TripCreateScreen() {
                     時期を比較する
                   </Button>
                   {!destination.trim() && (
-                    <p className="mt-2 text-[12px] text-text-porcelain/40">
+                    <p className="mt-2 text-[12px] text-text-porcelain/55">
                       先に STEP 01 で行き先を入れてください（未定候補でも構いません）。
                     </p>
                   )}
@@ -509,7 +509,7 @@ export function TripCreateScreen() {
                     </div>
                   )}
                   {estimates && estimates.length === 0 && (
-                    <p className="mt-4 text-[13px] text-text-porcelain/50">
+                    <p className="mt-4 text-[13px] text-text-porcelain/55">
                       この期間と泊数の組み合わせでは候補が作れませんでした。期間を広げてみてください。
                     </p>
                   )}
@@ -521,7 +521,7 @@ export function TripCreateScreen() {
               </p>
 
               <div role="group" aria-labelledby="companions-label" className="mt-9 block">
-                <span id="companions-label" className="label-caps text-text-porcelain/50">
+                <span id="companions-label" className="label-caps text-text-porcelain/55">
                   人数
                 </span>
                 <div className="mt-2 flex items-center gap-3">
@@ -552,7 +552,7 @@ export function TripCreateScreen() {
               <p className="label-caps text-brass">STEP 03</p>
               <h1 className="font-display text-display-l mt-2">どんな旅にする？</h1>
 
-              <p className="label-caps mt-8 text-text-porcelain/50">興味</p>
+              <p className="label-caps mt-8 text-text-porcelain/55">興味</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {INTEREST_TAGS.map((tag) => (
                   <Chip
@@ -570,7 +570,7 @@ export function TripCreateScreen() {
                 ))}
               </div>
 
-              <p className="label-caps mt-9 text-text-porcelain/50">ペース</p>
+              <p className="label-caps mt-9 text-text-porcelain/55">ペース</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {(Object.keys(PACE_LABEL) as (keyof typeof PACE_LABEL)[]).map((key) => (
                   <button
@@ -585,7 +585,7 @@ export function TripCreateScreen() {
                     <span className="block text-[15px] font-semibold">
                       {PACE_LABEL[key].label}
                     </span>
-                    <span className="mono-readout mt-1 block text-[11px] text-text-porcelain/50">
+                    <span className="mono-readout mt-1 block text-[11px] text-text-porcelain/55">
                       {PACE_LABEL[key].note}
                     </span>
                   </button>
@@ -610,7 +610,7 @@ export function TripCreateScreen() {
                       style={{ animationDelay: `${i * 120}ms` }}
                     />
                   ))}
-                  <p className="mono-readout pt-4 text-[12px] text-text-porcelain/45">
+                  <p className="mono-readout pt-4 text-[12px] text-text-porcelain/55">
                     {destination} / {dates.length} DAYS / {interests.join(' · ') || '指定なし'}
                   </p>
                 </div>

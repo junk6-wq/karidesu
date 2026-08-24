@@ -25,7 +25,7 @@ export function NumberStepper({
       <span className="min-w-0">
         <span className="text-[14px] font-semibold text-text-ink">{label}</span>
         {hint && (
-          <span className="mt-1 block text-[12px] leading-relaxed text-text-ink/50">{hint}</span>
+          <span className="mt-1 block text-[12px] leading-relaxed text-text-ink/65">{hint}</span>
         )}
       </span>
       <span className="flex shrink-0 items-center gap-3">

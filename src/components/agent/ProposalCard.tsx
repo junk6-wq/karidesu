@@ -8,7 +8,7 @@ import { computeItineraryDiff } from '@/lib/proposalDiff'
 const LINE_STYLE: Record<string, string> = {
   same: 'text-text-ink/70',
   new: 'text-brass font-semibold',
-  removed: 'text-brick/70 line-through',
+  removed: 'text-brick line-through',
   time_changed: 'text-[color:var(--c-amber)] font-semibold',
 }
 
@@ -53,9 +53,9 @@ export function ProposalCard({
     <div className="anim-rise rounded-2xl border border-black/8 bg-white/85 p-4 shadow-[0_10px_30px_-24px_rgba(14,21,33,0.6)]">
       <div className="mb-2 flex items-center gap-2">
         <span className="h-1.5 w-1.5 rounded-full bg-brass" />
-        <span className="label-caps text-text-ink/40">AI PROPOSAL</span>
+        <span className="label-caps text-text-ink/65">AI PROPOSAL</span>
         {proposal.confidence > 0 && (
-          <span className="mono-readout ml-auto text-[10px] text-text-ink/35">
+          <span className="mono-readout ml-auto text-[10px] text-text-ink/65">
             確信度 {Math.round(proposal.confidence * 100)}%
           </span>
         )}
@@ -67,7 +67,7 @@ export function ProposalCard({
       {/* 根拠（折りたたみ） */}
       <button
         onClick={() => setShowReason((v) => !v)}
-        className="tap mt-2 text-[12px] text-text-ink/45 underline decoration-dotted underline-offset-2"
+        className="tap mt-2 text-[12px] text-text-ink/65 underline decoration-dotted underline-offset-2"
       >
         {showReason ? '根拠を閉じる' : 'なぜこの提案？'}
       </button>
@@ -85,25 +85,25 @@ export function ProposalCard({
               <p className="mono-readout text-[11px] text-brass">DAY {String(section.dayNumber).padStart(2, '0')}</p>
               <div className="mt-2 grid grid-cols-2 gap-3">
                 <div>
-                  <p className="label-caps text-text-ink/35">変更前</p>
+                  <p className="label-caps text-text-ink/65">変更前</p>
                   <ul className="mt-1 space-y-0.5">
                     {section.before.map((line) => (
                       <li key={line.itemId} className={`mono-readout text-[11px] ${LINE_STYLE[line.status]}`}>
                         {LINE_MARK[line.status]} {line.time} {line.name}
                       </li>
                     ))}
-                    {section.before.length === 0 && <li className="text-[11px] text-text-ink/30">—</li>}
+                    {section.before.length === 0 && <li className="text-[11px] text-text-ink/65">—</li>}
                   </ul>
                 </div>
                 <div>
-                  <p className="label-caps text-text-ink/35">変更案</p>
+                  <p className="label-caps text-text-ink/65">変更案</p>
                   <ul className="mt-1 space-y-0.5">
                     {section.after.map((line) => (
                       <li key={line.itemId} className={`mono-readout text-[11px] ${LINE_STYLE[line.status]}`}>
                         {LINE_MARK[line.status]} {line.time} {line.name}
                       </li>
                     ))}
-                    {section.after.length === 0 && <li className="text-[11px] text-text-ink/30">—</li>}
+                    {section.after.length === 0 && <li className="text-[11px] text-text-ink/65">—</li>}
                   </ul>
                 </div>
               </div>
@@ -127,7 +127,7 @@ export function ProposalCard({
           )}
           {proposal.drawbacks.length > 0 && (
             <div>
-              <p className="label-caps text-text-ink/40">デメリット</p>
+              <p className="label-caps text-text-ink/65">デメリット</p>
               <ul className="mt-1 space-y-0.5 text-text-ink/65">
                 {proposal.drawbacks.map((d) => (
                   <li key={d}>・{d}</li>
@@ -142,7 +142,7 @@ export function ProposalCard({
       {(proposal.estimatedTimeDeltaMin !== undefined ||
         proposal.estimatedDistanceDeltaKm !== undefined ||
         proposal.estimatedBudgetDelta !== undefined) && (
-        <div className="mono-readout mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-text-ink/50">
+        <div className="mono-readout mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-text-ink/65">
           {proposal.estimatedTimeDeltaMin !== undefined && (
             <span>
               時間 {proposal.estimatedTimeDeltaMin > 0 ? '+' : ''}

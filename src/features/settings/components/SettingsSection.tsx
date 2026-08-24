@@ -24,7 +24,7 @@ export function SettingsSection({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p
-            className={`label-caps ${tone === 'dark' ? 'text-text-porcelain/45' : 'text-text-ink/45'}`}
+            className={`label-caps ${tone === 'dark' ? 'text-text-porcelain/55' : 'text-text-ink/65'}`}
           >
             {eyebrow}
           </p>
@@ -32,7 +32,7 @@ export function SettingsSection({
           {description && (
             <p
               className={`mt-1.5 text-[13px] leading-relaxed ${
-                tone === 'dark' ? 'text-text-porcelain/55' : 'text-text-ink/55'
+                tone === 'dark' ? 'text-text-porcelain/55' : 'text-text-ink/65'
               }`}
             >
               {description}

@@ -74,10 +74,10 @@ export function SpotPickScreen() {
           >
             ← 旅程へ
           </button>
-          <span className="mono-readout text-[12px] text-text-porcelain/50">{trip.destination}</span>
+          <span className="mono-readout text-[12px] text-text-porcelain/55">{trip.destination}</span>
         </header>
 
-        <div className="mt-4 text-text-porcelain/40">
+        <div className="mt-4 text-text-porcelain/55">
           <Thread variant="plan" progress={0.5} showHead />
         </div>
 

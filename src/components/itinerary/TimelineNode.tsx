@@ -17,7 +17,7 @@ const TYPE_LABEL: Record<ItineraryItem['type'], string> = {
 const PRIORITY_LABEL: Record<string, string> = { must: 'MUST', want: 'WANT', avoid: 'AVOID' }
 const PRIORITY_STYLE: Record<string, string> = {
   must: 'bg-brass/20 text-[#7a5f2b]',
-  want: 'bg-black/[0.06] text-text-ink/55',
+  want: 'bg-black/[0.06] text-text-ink/65',
   avoid: 'bg-brick/10 text-brick',
 }
 
@@ -106,10 +106,10 @@ export function TimelineNode({
                 <span className="whitespace-nowrap">
                   {item.plannedArrival ?? '--:--'}
                   {item.plannedDeparture && (
-                    <span className="text-text-ink/35"> → {item.plannedDeparture}</span>
+                    <span className="text-text-ink/65"> → {item.plannedDeparture}</span>
                   )}
                 </span>
-                <span className="shrink-0 whitespace-nowrap rounded-full bg-black/[0.06] px-1.5 py-0.5 text-text-ink/50">
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-black/[0.06] px-1.5 py-0.5 text-text-ink/65">
                   {TYPE_LABEL[item.type]}
                 </span>
                 {spot?.priority && (
@@ -124,7 +124,7 @@ export function TimelineNode({
                 {spot?.name ?? '不明なスポット'}
               </span>
               {spot?.openingHours && (
-                <span className="mono-readout mt-1 block text-[11px] text-text-ink/40">
+                <span className="mono-readout mt-1 block text-[11px] text-text-ink/65">
                   {spot.openingHours}
                 </span>
               )}
@@ -139,7 +139,7 @@ export function TimelineNode({
                     e.stopPropagation()
                     onMenu()
                   }}
-                  className="tap flex h-8 w-8 items-center justify-center rounded-full text-[18px] leading-none text-text-ink/35 hover:bg-black/[0.05]"
+                  className="tap flex h-8 w-8 items-center justify-center rounded-full text-[18px] leading-none text-text-ink/65 hover:bg-black/[0.05]"
                 >
                   ⋮
                 </span>
@@ -151,7 +151,7 @@ export function TimelineNode({
                   {...listeners}
                   aria-label="並べ替え"
                   onClick={(e) => e.stopPropagation()}
-                  className="tap hidden w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/25 active:cursor-grabbing sm:flex"
+                  className="tap hidden w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-ink/65 active:cursor-grabbing sm:flex"
                 >
                   ⠿
                 </span>
@@ -209,14 +209,14 @@ function TravelRow({
 
   return (
     <div className="py-1">
-      <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/45">
+      <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/65">
         <span>{MODE_LABEL[segment.mode] ?? '移動'}</span>
         <span className="text-brass">{formatDuration(segment.durationMin)}</span>
         {segment.distanceKm !== undefined && <span>{formatKm(segment.distanceKm)}</span>}
         {segment.mode === 'car' && segment.distanceKm !== undefined && (
-          <span className="text-text-ink/30">
+          <span className="text-text-ink/65">
             ガソリン代 約{estimateGasCost(segment.distanceKm).toLocaleString('ja-JP')}円
-            <span className="ml-1 rounded-full bg-black/[0.05] px-1.5 py-0.5 text-[9px] text-text-ink/40">
+            <span className="ml-1 rounded-full bg-black/[0.05] px-1.5 py-0.5 text-[9px] text-text-ink/65">
               推定
             </span>
           </span>
@@ -224,12 +224,12 @@ function TravelRow({
       </div>
 
       {showFreeTime && (
-        <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/40">
+        <div className="mono-readout flex flex-wrap items-center gap-x-2 gap-y-1 py-1 pl-1 text-[11px] text-text-ink/65">
           <span>◇ 自由時間 {formatDuration(freeMin)}</span>
           {onRequestIdea && freeMin >= 60 && (
             <button
               onClick={onRequestIdea}
-              className="tap rounded-full border border-black/12 px-2 py-0.5 text-[10px] text-text-ink/55 transition duration-200 ease-passage hover:border-brass"
+              className="tap rounded-full border border-black/12 px-2 py-0.5 text-[10px] text-text-ink/65 transition duration-200 ease-passage hover:border-brass"
             >
               AIに候補を出してもらう
             </button>

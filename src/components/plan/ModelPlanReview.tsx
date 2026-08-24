@@ -59,7 +59,7 @@ export function ModelPlanReview({
               <h2 className="mono-readout text-[13px] text-brass">
                 DAY {String(dayIndex + 1).padStart(2, '0')}
               </h2>
-              <span className="mono-readout text-[11px] text-text-porcelain/45">
+              <span className="mono-readout text-[11px] text-text-porcelain/55">
                 {formatDateDot(day.date)} {weekdayEn(day.date)}
               </span>
               {region && (
@@ -67,13 +67,13 @@ export function ModelPlanReview({
                   {region}
                 </span>
               )}
-              <span className="mono-readout ml-auto text-[11px] text-text-porcelain/35">
+              <span className="mono-readout ml-auto text-[11px] text-text-porcelain/55">
                 {day.items.length} 件
               </span>
             </div>
 
             {isMoveDay && (
-              <p className="mt-1.5 text-[12px] leading-relaxed text-brass/85">
+              <p className="mt-1.5 text-[12px] leading-relaxed text-brass">
                 {prevRegion} から {region} へ移動する日です。
                 {move && (
                   <>
@@ -84,7 +84,7 @@ export function ModelPlanReview({
             )}
 
             {day.items.length === 0 ? (
-              <p className="mt-2 text-[12px] text-text-porcelain/35">この日は空です。</p>
+              <p className="mt-2 text-[12px] text-text-porcelain/55">この日は空です。</p>
             ) : (
               <ul className="mt-3 space-y-3">
                 {day.items.map((item) => {
@@ -109,7 +109,7 @@ export function ModelPlanReview({
                           <p className="mono-readout text-[11px] text-brass">
                             {item.plannedArrival ?? '--:--'}
                             {item.plannedDeparture && (
-                              <span className="text-text-porcelain/50"> → {item.plannedDeparture}</span>
+                              <span className="text-text-porcelain/55"> → {item.plannedDeparture}</span>
                             )}
                           </p>
                           <p className="mt-0.5 truncate text-[17px] font-semibold text-text-porcelain">
