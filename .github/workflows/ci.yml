@@ -1,0 +1,36 @@
+name: CI
+
+# deploy.yml は main への push でしか動かないため、PR の時点では
+# 型エラーもビルド失敗も検出されずマージできてしまう。
+# デプロイ前に同じ検査を PR で先に通す。
+on:
+  pull_request:
+  workflow_dispatch:
+
+# 同じ PR に続けて push したとき、古い実行を打ち切る
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Build
+        # 配信そのものはしないが、本番と同じ BASE_PATH で組んで
+        # パス解決が壊れていないところまで見る
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/

@@ -128,7 +128,8 @@ JOURNEY 中に電波が切れても画面は開く。旅のデータ自体は lo
 
 ## デプロイ
 
-`main` への push で GitHub Actions が GitHub Pages へ配信する（`.github/workflows/deploy.yml`）。
+PR を開くと `.github/workflows/ci.yml` が型チェックと本番ビルドを走らせる。
+`main` への push では `.github/workflows/deploy.yml` が同じ検査をしたうえで GitHub Pages へ配信する。
 プロジェクトページ配信のため `BASE_PATH` を渡してビルドし、SPA 直リンク用に `404.html` を複製している。
 
 以前の静的ページは `public/obon-2026.html` に残してあり、`/obon-2026.html` で開ける。
