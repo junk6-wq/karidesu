@@ -41,7 +41,7 @@ M = {
     "wall": mat("wall", (0.86, 0.84, 0.80), 0.9),
     "roof": mat("roof", (0.10, 0.10, 0.11), 0.5, 0.2),
     "glass": mat("glass", (0.45, 0.62, 0.72), 0.05, alpha=0.35),
-    "frame": mat("frame", (0.05, 0.05, 0.05), 0.4, 0.6),
+    "frame": mat("frame", (0.16, 0.16, 0.17), 0.4, 0.6),
     "wood": mat("wood", (0.45, 0.30, 0.17), 0.5),
     "door_g": mat("door_g", (0.18, 0.18, 0.20), 0.4, 0.4),
     "ground": mat("ground", (0.30, 0.42, 0.22), 0.95),
@@ -119,10 +119,11 @@ def wall_seg(name, axis, fixed, a, b, kind="wall"):
     t = WALL_T / 2
     h = WALL_H if kind != "fence" else 2.4
     m = M["wall"] if kind != "fence" else M["wood"]
+    # 東西の壁は端を t だけ延ばして角を塞ぎ、南北の壁は端を t だけ縮める(角で面が重なると黒く潰れる)
     if axis == "x":
         box(name, a - t, fixed - t, 0, b + t, fixed + t, h, m, "wall")
-    else:
-        box(name, fixed - t, a - t, 0, fixed + t, b + t, h, m, "wall")
+    elif b - a > 2 * t + 0.01:
+        box(name, fixed - t, a + t, 0, fixed + t, b - t, h, m, "wall")
 
 
 def glass_seg(name, axis, fixed, a, b):
@@ -144,10 +145,10 @@ def glass_seg(name, axis, fixed, a, b):
     # 上枠・下枠 + 垂れ壁
     if axis == "x":
         box(f"{name}_top", a, fixed - 0.06, GLASS_H, b, fixed + 0.06, GLASS_H + 0.1, M["frame"])
-        box(f"{name}_hdr", a, fixed - WALL_T / 2, GLASS_H + 0.1, b, fixed + WALL_T / 2, WALL_H, M["wall"], "wall")
+        box(f"{name}_hdr", a, fixed - WALL_T * 0.45, GLASS_H + 0.1, b, fixed + WALL_T * 0.45, WALL_H, M["wall"], "wall")
     else:
         box(f"{name}_top", fixed - 0.06, a, GLASS_H, fixed + 0.06, b, GLASS_H + 0.1, M["frame"])
-        box(f"{name}_hdr", fixed - WALL_T / 2, a, GLASS_H + 0.1, fixed + WALL_T / 2, b, WALL_H, M["wall"], "wall")
+        box(f"{name}_hdr", fixed - WALL_T * 0.45, a, GLASS_H + 0.1, fixed + WALL_T * 0.45, b, WALL_H, M["wall"], "wall")
 
 
 # 中庭に面する辺: (axis, fixed, a, b)
@@ -157,21 +158,38 @@ court_edges = {
     ("y", cx1): (cy0, cy1),   # 東辺 = 玄関ホール西面(ピクチャーウィンドウ)
 }
 
+def merge(intervals):
+    out = []
+    for a, b in sorted(intervals):
+        if out and a <= out[-1][1] + 1e-6:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return out
+
+
+# 隣り合う部屋の境界は両側から来るので、線ごとに区間をまとめて壁を1枚だけ作る(重なると面が黒く潰れる)
+walls, glasses = {}, {}
 for r in rooms:
     if r["kind"] == "courtyard":
         continue
     x0, y0, x1, y1 = rect(r)
     for axis, fixed, a, b in (("x", y0, x0, x1), ("x", y1, x0, x1), ("y", x0, y0, y1), ("y", x1, y0, y1)):
-        gl = court_edges.get((axis, fixed))
-        nm = f"w_{r['id']}_{axis}{fixed:.1f}"
+        key = (axis, round(fixed, 3))
+        gl = court_edges.get(key)
         if gl:
             ga, gb = max(a, gl[0]), min(b, gl[1])
             if gb - ga > 0.05:
-                wall_seg(nm + "_pre", axis, fixed, a, ga)
-                glass_seg(nm, axis, fixed, ga, gb)
-                wall_seg(nm + "_post", axis, fixed, gb, b)
+                glasses.setdefault(key, []).append((ga, gb))
+                walls.setdefault(key, []).extend([(a, ga), (gb, b)])
                 continue
-        wall_seg(nm, axis, fixed, a, b)
+        walls.setdefault(key, []).append((a, b))
+for (axis, fixed), ivs in walls.items():
+    for i, (a, b) in enumerate(merge([iv for iv in ivs if iv[1] - iv[0] > 0.05])):
+        wall_seg(f"w_{axis}{fixed:.1f}_{i}", axis, fixed, a, b)
+for (axis, fixed), ivs in glasses.items():
+    for i, (a, b) in enumerate(merge(ivs)):
+        glass_seg(f"gl_{axis}{fixed:.1f}_{i}", axis, fixed, a, b)
 # 中庭の西側は高塀で閉じる
 wall_seg("fence_west", "y", cx0, cy0, cy1, "fence")
 
@@ -179,7 +197,7 @@ wall_seg("fence_west", "y", cx0, cy0, cy1, "fence")
 for d in PLAN["exterior_doors"]:
     x0, y0, x1, y1 = d["edge"]
     m = M["door_g"] if d["id"] == "garage_door" else M["wood"]
-    box(d["id"], x0, y0 - 0.02, 0, x1, y1 + 0.06, d["h"], m)
+    box(d["id"], x0, y0, 0, x1, y1 + WALL_T / 2 + 0.04, d["h"], m)
 
 # --- 屋根(陸屋根) ---
 for i, r in enumerate([r for r in rooms if r["kind"] != "courtyard"]):
@@ -226,9 +244,11 @@ def render(view):
         cam.location = (X0 - 16, Y0 - 14, 15)
         look(cam, (center.x, center.y, 0.5))
     elif view == "cutaway":
+        bg.inputs[1].default_value = 1.1
+        sun.data.energy = 3.5
         cam.data.lens = 30
-        cam.location = (X0 - 4, Y0 - 17, 21)
-        look(cam, (center.x + 1.0, center.y, 0))
+        cam.location = (X0 + 1, Y0 - 9, 27)
+        look(cam, (center.x, center.y - 0.5, 0))
     elif view == "front":
         cam.data.lens = 24
         cam.location = (X0 + 10, Y1 + 12.0, 1.7)

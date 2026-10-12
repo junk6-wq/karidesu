@@ -4,6 +4,12 @@
 
 ![間取り](renders/plan.png)
 
+| 外観（屋根あり） | 断面（屋根なし） |
+| --- | --- |
+| ![外観](renders/aerial.png) | ![断面](renders/cutaway.png) |
+
+北側の道路から見た正面は `renders/front.png`。
+
 ## 中身
 | パス | 内容 |
 | --- | --- |
