@@ -1,0 +1,67 @@
+{
+  "_note": "ゾーニング案 v0。座標は m。x=東、y=北。道路は北側。コの字は西側が開口（高塀で閉じる）。",
+  "targets": {
+    "living_tsubo": 45.5,
+    "garage_tsubo": 12.5,
+    "courtyard_jo": 14,
+    "garage_size": [6.8, 6.3]
+  },
+  "rooms": [
+    {"id": "garage",    "name": "ビルトインガレージ(並列2台)", "kind": "garage",    "rect": [0.0, 6.4, 6.8, 6.3]},
+    {"id": "courtyard", "name": "中庭",                         "kind": "courtyard", "rect": [0.0, 3.0, 6.8, 3.4]},
+    {"id": "ldk",       "name": "LDK",                          "kind": "ldk",       "rect": [0.0, 0.0, 16.5, 3.0]},
+
+    {"id": "hall",      "name": "玄関ホール",                   "kind": "entry",     "rect": [6.8, 3.0, 2.0, 3.4]},
+    {"id": "pantry",    "name": "パントリー",                   "kind": "store",     "rect": [8.8, 3.0, 2.0, 3.4]},
+    {"id": "doma",      "name": "土間(ガレージ勝手口)",         "kind": "entry",     "rect": [6.8, 6.4, 2.0, 2.4]},
+    {"id": "sic",       "name": "土間収納SIC",                  "kind": "store",     "rect": [8.8, 6.4, 2.0, 2.4]},
+    {"id": "family",    "name": "家族玄関",                     "kind": "entry",     "rect": [6.8, 8.8, 2.0, 5.6]},
+    {"id": "toilet1",   "name": "トイレ1・ただいま手洗い",      "kind": "wet",       "rect": [8.8, 8.8, 2.0, 2.2]},
+    {"id": "guest",     "name": "ゲスト玄関",                   "kind": "entry",     "rect": [8.8, 11.0, 2.0, 3.4]},
+
+    {"id": "kidsA",     "name": "子ども部屋A",                  "kind": "private",   "rect": [10.8, 3.0, 2.9, 2.8]},
+    {"id": "kidsB",     "name": "子ども部屋B",                  "kind": "private",   "rect": [13.7, 3.0, 2.8, 2.8]},
+    {"id": "fcl",       "name": "ウォークスルーFCL",            "kind": "store",     "rect": [11.6, 5.8, 3.8, 1.5]},
+    {"id": "s1",        "name": "収納",                         "kind": "store",     "rect": [10.8, 5.8, 0.8, 1.5]},
+    {"id": "s2",        "name": "収納",                         "kind": "store",     "rect": [15.4, 5.8, 1.1, 1.5]},
+    {"id": "laundry",   "name": "脱衣ランドリー",               "kind": "wet",       "rect": [10.8, 7.3, 3.2, 2.2]},
+    {"id": "wash",      "name": "洗面",                         "kind": "wet",       "rect": [14.0, 7.3, 2.5, 2.2]},
+    {"id": "bath",      "name": "浴室(1.25坪)",                 "kind": "wet",       "rect": [14.1, 9.5, 2.4, 1.9]},
+    {"id": "toilet2",   "name": "トイレ2",                      "kind": "wet",       "rect": [10.8, 9.5, 1.4, 1.9]},
+    {"id": "anteroom",  "name": "寝室前室",                     "kind": "entry",     "rect": [12.2, 9.5, 1.9, 1.9]},
+    {"id": "master",    "name": "主寝室",                       "kind": "private",   "rect": [10.8, 11.4, 3.9, 3.0]},
+    {"id": "wic",       "name": "WIC",                          "kind": "store",     "rect": [14.7, 11.4, 1.8, 3.0]}
+  ],
+  "glazing_courtyard": true,
+  "exterior_doors": [
+    {"id": "garage_door", "name": "ガレージ扉", "edge": [0.3, 12.7, 6.5, 12.7], "h": 2.4},
+    {"id": "family_door", "name": "家族玄関",   "edge": [7.1, 14.4, 8.5, 14.4], "h": 2.2},
+    {"id": "guest_door",  "name": "ゲスト玄関", "edge": [9.2, 14.4, 10.4, 14.4], "h": 2.2}
+  ],
+  "adjacency": [
+    ["garage", "doma",      "買い物動線: ガレージ勝手口→土間"],
+    ["doma",   "sic",       "土間→土間収納"],
+    ["sic",    "pantry",    "土間収納→パントリー"],
+    ["pantry", "ldk",       "買い物動線: パントリー→キッチン直結"],
+    ["doma",   "hall",      "土間→玄関ホール"],
+    ["hall",   "ldk",       "玄関ホール→LDK"],
+    ["hall",   "courtyard", "視線抜け: 玄関ホールから中庭"],
+    ["garage", "courtyard", "ガレージ南面が中庭に面する"],
+    ["ldk",    "courtyard", "LDKが中庭に面する"],
+    ["family", "garage",    "家族玄関とガレージが隣接"],
+    ["family", "toilet1",   "ただいま手洗い"],
+    ["guest",  "family",    "2WAY玄関(ゲスト↔家族)"],
+    ["kidsA",  "ldk",       "子ども部屋Aはリビングアクセス"],
+    ["kidsB",  "ldk",       "子ども部屋Bはリビングアクセス"],
+    ["kidsA",  "kidsB",     "可動間仕切りで1ルーム化"],
+    ["fcl",    "kidsA",     "洗濯動線: FCL→子ども部屋"],
+    ["fcl",    "kidsB",     "洗濯動線: FCL→子ども部屋"],
+    ["laundry","fcl",       "洗濯動線: ランドリー→FCL"],
+    ["laundry","wash",      "脱衣ランドリー⇄洗面"],
+    ["wash",   "bath",      "洗面⇄浴室"],
+    ["laundry","anteroom",  "洗濯動線: ランドリー→寝室前室"],
+    ["anteroom","master",   "寝室前室→主寝室"],
+    ["toilet2","master",    "トイレ2は主寝室付近"],
+    ["master", "wic",       "主寝室⇄WIC"]
+  ]
+}

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1064 986" width="1064" height="986" font-family="'Noto Sans CJK JP','Hiragino Sans','Yu Gothic','WenQuanYi Zen Hei',sans-serif">
+<rect width="1064" height="986" fill="#fbfaf7"/>
+<rect x="2.799999999999997" y="8.0" width="1058.3999999999999" height="26" fill="#9a9a9a"/>
+<text x="12.799999999999997" y="25.0" font-size="13" fill="#fff">道路（北側）</text>
+<rect x="70.0" y="185.2" width="380.8" height="352.8" fill="#cfd2d6" stroke="#333" stroke-width="2.2"/>
+<text x="260.4" y="352.6" font-size="15.0" text-anchor="middle" fill="#111">ビルトインガレージ</text>
+<text x="260.4" y="370.6" font-size="12.8" text-anchor="middle" fill="#555">26.4畳</text>
+<rect x="70.0" y="538.0" width="380.8" height="190.4" fill="#cfe3c4" stroke="#333" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="260.4" y="633.2" font-size="15.0" text-anchor="middle" fill="#111">中庭</text>
+<rect x="70.0" y="728.4" width="924.0" height="168.0" fill="#f1dfbd" stroke="#333" stroke-width="2.2"/>
+<text x="532.0" y="803.4" font-size="15.0" text-anchor="middle" fill="#111">LDK</text>
+<text x="532.0" y="821.4" font-size="12.8" text-anchor="middle" fill="#555">30.6畳</text>
+<rect x="450.8" y="538.0" width="112.0" height="190.4" fill="#d5dbe6" stroke="#333" stroke-width="2.2"/>
+<text x="506.8" y="624.2" font-size="15.0" text-anchor="middle" fill="#111">玄関ホール</text>
+<text x="506.8" y="642.2" font-size="12.8" text-anchor="middle" fill="#555">4.2畳</text>
+<rect x="562.8" y="538.0" width="112.0" height="190.4" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="618.8" y="624.2" font-size="15.0" text-anchor="middle" fill="#111">パントリー</text>
+<text x="618.8" y="642.2" font-size="12.8" text-anchor="middle" fill="#555">4.2畳</text>
+<rect x="450.8" y="403.6" width="112.0" height="134.4" fill="#d5dbe6" stroke="#333" stroke-width="2.2"/>
+<text x="506.8" y="461.8" font-size="15.0" text-anchor="middle" fill="#111">土間</text>
+<text x="506.8" y="479.8" font-size="12.8" text-anchor="middle" fill="#555">3.0畳</text>
+<rect x="562.8" y="403.6" width="112.0" height="134.4" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="618.8" y="462.2" font-size="14.4" text-anchor="middle" fill="#111">土間収納SIC</text>
+<text x="618.8" y="479.4" font-size="12.2" text-anchor="middle" fill="#555">3.0畳</text>
+<rect x="450.8" y="90.0" width="112.0" height="313.6" fill="#d5dbe6" stroke="#333" stroke-width="2.2"/>
+<text x="506.8" y="237.8" font-size="15.0" text-anchor="middle" fill="#111">家族玄関</text>
+<text x="506.8" y="255.8" font-size="12.8" text-anchor="middle" fill="#555">6.9畳</text>
+<rect x="562.8" y="280.4" width="112.0" height="123.2" fill="#c4e1ee" stroke="#333" stroke-width="2.2"/>
+<text x="618.8" y="324.0" font-size="15.0" text-anchor="middle" fill="#111">トイレ1</text>
+<text x="618.8" y="342.0" font-size="15.0" text-anchor="middle" fill="#111">(手洗い)</text>
+<text x="618.8" y="360.0" font-size="12.8" text-anchor="middle" fill="#555">2.7畳</text>
+<rect x="562.8" y="90.0" width="112.0" height="190.4" fill="#d5dbe6" stroke="#333" stroke-width="2.2"/>
+<text x="618.8" y="176.2" font-size="15.0" text-anchor="middle" fill="#111">ゲスト玄関</text>
+<text x="618.8" y="194.2" font-size="12.8" text-anchor="middle" fill="#555">4.2畳</text>
+<rect x="674.8" y="571.6" width="162.4" height="156.8" fill="#f2d6d6" stroke="#333" stroke-width="2.2"/>
+<text x="756.0" y="641.0" font-size="15.0" text-anchor="middle" fill="#111">子ども部屋A</text>
+<text x="756.0" y="659.0" font-size="12.8" text-anchor="middle" fill="#555">5.0畳</text>
+<rect x="837.2" y="571.6" width="156.8" height="156.8" fill="#f2d6d6" stroke="#333" stroke-width="2.2"/>
+<text x="915.6" y="641.0" font-size="15.0" text-anchor="middle" fill="#111">子ども部屋B</text>
+<text x="915.6" y="659.0" font-size="12.8" text-anchor="middle" fill="#555">4.8畳</text>
+<rect x="719.6" y="487.6" width="212.8" height="84.0" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="826.0" y="520.6" font-size="15.0" text-anchor="middle" fill="#111">ウォークスルーFCL</text>
+<text x="826.0" y="538.6" font-size="12.8" text-anchor="middle" fill="#555">3.5畳</text>
+<rect x="674.8" y="487.6" width="44.8" height="84.0" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="697.2" y="520.6" font-size="15.0" text-anchor="middle" fill="#111">収納</text>
+<text x="697.2" y="538.6" font-size="12.8" text-anchor="middle" fill="#555">0.7畳</text>
+<rect x="932.4" y="487.6" width="61.6" height="84.0" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="963.2" y="520.6" font-size="15.0" text-anchor="middle" fill="#111">収納</text>
+<text x="963.2" y="538.6" font-size="12.8" text-anchor="middle" fill="#555">1.0畳</text>
+<rect x="674.8" y="364.4" width="179.2" height="123.2" fill="#c4e1ee" stroke="#333" stroke-width="2.2"/>
+<text x="764.4" y="417.0" font-size="15.0" text-anchor="middle" fill="#111">脱衣ランドリー</text>
+<text x="764.4" y="435.0" font-size="12.8" text-anchor="middle" fill="#555">4.3畳</text>
+<rect x="854.0" y="364.4" width="140.0" height="123.2" fill="#c4e1ee" stroke="#333" stroke-width="2.2"/>
+<text x="924.0" y="417.0" font-size="15.0" text-anchor="middle" fill="#111">洗面</text>
+<text x="924.0" y="435.0" font-size="12.8" text-anchor="middle" fill="#555">3.4畳</text>
+<rect x="859.6" y="258.0" width="134.4" height="106.4" fill="#c4e1ee" stroke="#333" stroke-width="2.2"/>
+<text x="926.8" y="302.2" font-size="15.0" text-anchor="middle" fill="#111">浴室</text>
+<text x="926.8" y="320.2" font-size="12.8" text-anchor="middle" fill="#555">2.8畳</text>
+<rect x="674.8" y="258.0" width="78.4" height="106.4" fill="#c4e1ee" stroke="#333" stroke-width="2.2"/>
+<text x="714.0" y="302.2" font-size="15.0" text-anchor="middle" fill="#111">トイレ2</text>
+<text x="714.0" y="320.2" font-size="12.8" text-anchor="middle" fill="#555">1.6畳</text>
+<rect x="753.2" y="258.0" width="106.4" height="106.4" fill="#d5dbe6" stroke="#333" stroke-width="2.2"/>
+<text x="806.4" y="302.2" font-size="15.0" text-anchor="middle" fill="#111">寝室前室</text>
+<text x="806.4" y="320.2" font-size="12.8" text-anchor="middle" fill="#555">2.2畳</text>
+<rect x="674.8" y="90.0" width="218.4" height="168.0" fill="#f2d6d6" stroke="#333" stroke-width="2.2"/>
+<text x="784.0" y="165.0" font-size="15.0" text-anchor="middle" fill="#111">主寝室</text>
+<text x="784.0" y="183.0" font-size="12.8" text-anchor="middle" fill="#555">7.2畳</text>
+<rect x="893.2" y="90.0" width="100.8" height="168.0" fill="#eadfc0" stroke="#333" stroke-width="2.2"/>
+<text x="943.6" y="165.0" font-size="15.0" text-anchor="middle" fill="#111">WIC</text>
+<text x="943.6" y="183.0" font-size="12.8" text-anchor="middle" fill="#555">3.3畳</text>
+<line x1="70.0" y1="538.0" x2="70.0" y2="728.4" stroke="#6b4a2b" stroke-width="7"/>
+<text x="62.0" y="633.2" font-size="12" fill="#6b4a2b" text-anchor="end" transform="rotate(-90 62.0 633.2)">高塀（外に閉じる）</text>
+<line x1="86.8" y1="185.20000000000005" x2="434.0" y2="185.20000000000005" stroke="#c0392b" stroke-width="6"/>
+<text x="260.4" y="177.20000000000005" font-size="11" fill="#c0392b" text-anchor="middle">ガレージ扉</text>
+<line x1="467.59999999999997" y1="90.0" x2="546.0" y2="90.0" stroke="#c0392b" stroke-width="6"/>
+<text x="506.79999999999995" y="82.0" font-size="11" fill="#c0392b" text-anchor="middle">家族玄関</text>
+<line x1="585.1999999999999" y1="90.0" x2="652.4" y2="90.0" stroke="#c0392b" stroke-width="6"/>
+<text x="618.8" y="82.0" font-size="11" fill="#c0392b" text-anchor="middle">ゲスト玄関</text>
+<line x1="70" y1="924.4" x2="994.0" y2="924.4" stroke="#333"/>
+<text x="532.0" y="942.4" font-size="13" text-anchor="middle">16.5 m</text>
+<text x="76.0" y="201.20000000000005" font-size="11" fill="#555">6.8 × 6.3 m</text>
+<text x="22.800000000000004" y="493.2" font-size="13" text-anchor="middle" transform="rotate(-90 22.800000000000004 493.2)">14.4 m</text>
+<polygon points="1014,34 1005,64 1023,64" fill="#333"/><text x="1014" y="82" font-size="14" text-anchor="middle">N</text>
+<text x="70" y="972" font-size="12" fill="#666">ゾーニング案 v0（約 16.5 × 14.4 m）／ 赤線 = 出入口</text>
+</svg>
