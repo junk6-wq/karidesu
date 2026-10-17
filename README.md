@@ -2,13 +2,15 @@
 
 「外に閉じ、中に開く」コの字型コートハウスの平屋を計画するリポジトリ。要件を書き、間取りをデータで持ち、Blender で3D化して見比べる。
 
-![間取り](renders/plan.png)
+![中庭の夕景](renders/courtyard_dusk.png)
 
-| 外観（屋根あり） | 断面（屋根なし） |
+| リビングから中庭・ガレージを見る | 屋根を外した全体 |
 | --- | --- |
-| ![外観](renders/aerial.png) | ![断面](renders/cutaway.png) |
+| ![リビング](renders/living_day.png) | ![全体](renders/dollhouse.png) |
+| **上空から** | **道路から（夕方）** |
+| ![上空](renders/aerial_day.png) | ![道路](renders/street_dusk.png) |
 
-北側の道路から見た正面は `renders/front.png`。
+![間取り](renders/plan.png)
 
 ## 中身
 | パス | 内容 |
@@ -19,7 +21,7 @@
 | `tools/check_plan.py` | 重なり・面積・動線のチェック |
 | `tools/draw_plan.py` | 間取り図（`docs/plan.svg`）を描く |
 | `blender/build_house.py` | `plan.json` から3Dモデルを組み立てて描画 |
-| `renders/` | 描画結果（間取り・外観・断面・正面） |
+| `renders/` | 描画結果（間取り図と5つの視点） |
 
 ## 使い方
 ```sh
@@ -28,9 +30,10 @@ python tools/draw_plan.py           # docs/plan.svg を更新
 
 pip install -r requirements.txt     # Blender 5.x（bpy）
 python blender/build_house.py       # renders/*.png と blender/house.blend を更新
-python blender/build_house.py cutaway   # 1枚だけ描く（aerial / cutaway / front）
+python blender/build_house.py courtyard_dusk   # 1枚だけ描く
+python blender/build_house.py --draft          # 低解像度で構図だけ確認（数十秒）
 ```
-描画は CPU の Cycles で、1枚あたり数分かかる。`blender/house.blend` は手元の Blender で開いて自由に回せる。
+視点は `courtyard_dusk`（中庭の夕景）、`living_day`（リビング）、`aerial_day`（上空）、`dollhouse`（屋根を外した全体）、`street_dusk`（道路から）。描画は CPU の Cycles で、1枚あたり数分かかる。`blender/house.blend` は手元の Blender で開いて自由に回せる。
 
 ## 間取りを変えるには
 `plan/plan.json` の `rect` は `[x, y, 幅, 奥行]`（m）。x=東、y=北、道路は北側。変えたら `check_plan.py` で重なりや動線の切れを確認してから、図と3Dを作り直す。

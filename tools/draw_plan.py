@@ -82,7 +82,7 @@ out.append(f'<text x="{tx - 8}" y="{ty}" font-size="13" text-anchor="middle" tra
 nx, ny = W - 50, 60
 out.append(f'<polygon points="{nx},{ny - 26} {nx - 9},{ny + 4} {nx + 9},{ny + 4}" fill="#333"/>'
            f'<text x="{nx}" y="{ny + 22}" font-size="14" text-anchor="middle">N</text>')
-out.append(f'<text x="{MX}" y="{H - 14}" font-size="12" fill="#666">ゾーニング案 v0（約 {X1:.1f} × {Y1:.1f} m）／ 赤線 = 出入口</text>')
+out.append(f'<text x="{MX}" y="{H - 14}" font-size="12" fill="#666">{plan["_note"].split("。")[0]}（約 {X1:.1f} × {Y1:.1f} m）／ 赤線 = 出入口</text>')
 out.append("</svg>")
 (ROOT / "docs" / "plan.svg").write_text("\n".join(out), encoding="utf-8")
 print("wrote docs/plan.svg")
